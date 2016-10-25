@@ -1,0 +1,48 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+        "jsx": false
+    }
+  },
+  "plugins": [
+    "jsx-a11y"
+  ],
+  "env": {
+    "browser": true,
+    "es6": true,
+  },
+  "rules": {
+    "jsx-a11y/no-static-element-interactions": 0,
+    "import/extensions": 0,
+    "no-undef": 1,
+    "no-return-assign": 0,
+    "key-spacing": ["error", { "mode": "minimum" }],
+    "no-unused-vars": 1,
+    "no-trailing-spaces" : 0,
+    "template-curly-spacing" : 0,
+    "no-console": ["warn", { "allow": ["warn", "error", "info"] }],
+    "arrow-body-style": 0,
+    "no-multi-spaces": 0,
+    "import/no-unresolved" : 0,
+    "new-cap": 0,
+    "func-names" : 0,
+    # "import/no-extraneous-dependencies": ["error", {"devDependencies": true, "optionalDependencies": false, "peerDependencies": false}],
+  },
+  "settings": {
+    "import/ignore": [
+      "jspm_packages",
+      "node_modules",
+      ".(scss|less|css)$",
+      ".[^js(x)?]+$"
+    ],
+    "import/resolve": {
+      "moduleDirectory": [
+        "jspm_packages",
+        "node_modules",
+        "."
+      ]
+    }
+  }
+}
