@@ -1,17 +1,16 @@
-import { SIZE } from './config';
+import { getSize } from './config';
 import { data } from '../data';
+import { random, floor } from './Maths';
 
 export const getRandomTitles = () => {
   const r = Math.floor((data.length - 1) * Math.random() + .5);
   return data[r].title;
 }
 
-export const getRandomMinMaxVectorScreen = (radius) => {
-  const tryX = Math.random() * SIZE.wr;
-  const tryY = Math.random() * SIZE.hr;
-
-  const x = Math.max(radius, Math.min(tryX, tryX - radius));
-  const y = Math.max(radius, Math.min(tryY, tryY - radius));
+export const getRandomMinMaxVectorScreen = (minX, minY, maxX, maxY) => {
+  const { wr, hr } = getSize();
+  const x = floor(random(wr - maxX, minX));
+  const y = floor(random(hr - maxY, minY));
 
   return { x, y };
 }

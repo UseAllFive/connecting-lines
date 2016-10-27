@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run lint",
-    "start": "budo --dir dist/ src/index.js:js/bundle.js -v --live --open -- -t [ babelify --presets [ latest ] ]",
+    "watch": "browser-sync start --files 'dist' --server 'dist' --no-notify",
+    "compile:w": "simplifyify src/index.js -w dist -d -o dist/js/bundle.js",
+    "start": "npm run compile:w & npm run watch",
     "lint": "eslint src --fix",
     "build": "browserify -t [ babelify --presets [ latest ] ] src/index.js | uglifyjs -cm > dist/js/bundle.js"
   },
@@ -17,10 +19,10 @@
   "author": "Silvio Paganini",
   "license": "ISC",
   "dependencies": {
-    "babel-preset-es2015": "^6.3.13",
     "babelify": "^7.2.0",
     "browserify": "^13.0.0",
     "dat-gui": "^0.5.0",
+    "lodash": "^4.16.4",
     "pixi.js": "^4.1.0",
     "stats-js": "^1.0.0-alpha1"
   },
@@ -28,13 +30,26 @@
     "babel-cli": "^6.18.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-latest": "^6.16.0",
-    "budo": "^9.2.1",
+    "browser-sync": "^2.17.5",
     "eslint": "^3.8.1",
     "eslint-plugin-jsx-a11y": "^2.2.3",
+    "simplifyify": "^2.0.4",
     "uglifyjs": "^2.4.10"
   },
   "engines": {
     "node": ">= 5.6.0",
     "npm": ">=3.6.0"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "latest"
+          ]
+        }
+      ]
+    ]
   }
 }

@@ -4,7 +4,7 @@ import { types } from '../../data';
 
 const style = {
   fontFamily: 'SangBleu BP',
-  fontSize: 18,
+  fontSize: 21,
   fill: 0x000000,
   align: 'left'
 }
@@ -34,25 +34,31 @@ export default class Block extends Container {
   addLinks(links) {
     this.linksContainer = new Container();
     this.linksContainer.position.y = 2;
+    this.dots = [];
     let row = -1;
-    const offset = 3;
-    for (var i = 0; i < links.length; i++) {
-      const link = types[links[i]];
-      const { color } = link;
+    let col = 0;
+    const offset = 7;
+    for (const link of links) {
+      const dot = new ColorDot(types[link]);
+      dot.position.x = ( col % 2 ) * offset;
 
-      const dot = new ColorDot(color);
-      dot.position.x = ( i % 2 ) * offset;
-      if(i % 2 === 0 ) row++;
+      if(col % 2 === 0 ) row++;
+
+      col++;
       dot.position.y = row * offset;
+
+
+      this.dots.push(dot);
 
       this.linksContainer.addChild(dot);
     }
+    this.linksContainer.position.y = offset;
     this.addChild(this.linksContainer);
   }
 
   addTitle(title) {
     this.title = new Text(title, style);
-    this.title.position.x = 10;
+    this.title.position.x = 15;
     this.addChild(this.title);
   }
 

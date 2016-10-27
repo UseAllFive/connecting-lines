@@ -1,7 +1,13 @@
 import dat from 'dat-gui'
 import Stats from 'stats-js'
-import { autoDetectRenderer, Container } from 'pixi.js/src';
-import { SIZE, DEBUG } from './utils/config';
+import {
+  autoDetectRenderer,
+  // CanvasRenderer,
+  Graphics,
+  Container } from 'pixi.js/src';
+import { groupBy } from 'lodash';
+
+import { setSize, getSize, DEBUG } from './utils/config';
 import { getRandomMinMaxVectorScreen } from './utils/random';
 import Block from './components/block/block';
 import { data } from './data';
@@ -17,17 +23,20 @@ class WocViz {
     this.counter  = 0;
     this.gui      = null;
 
-    SIZE.w = width;
-    SIZE.w2 = width / 2;
-    SIZE.wr = width / window.devicePixelRatio;
-    SIZE.h = height;
-    SIZE.h2 = height / 2;
-    SIZE.hr = height / window.devicePixelRatio;
+    setSize({
+      w: width,
+      w2: width / 2,
+      wr: width / window.devicePixelRatio,
+      h: height,
+      h2: height / 2,
+      hr: height / window.devicePixelRatio,
+    })
 
     // this.loadFonts();
     this.startStats();
     this.createRender(canvasContainer);
     this.addObjects();
+    this.generateLines();
     this.startGUI();
 
     if(this.autoRender) this.update();
@@ -51,7 +60,9 @@ class WocViz {
       backgroundColor: 0xFFFFFF
     }
 
-    this.renderer = autoDetectRenderer(SIZE.w, SIZE.h, options);
+    const { w, h } = getSize();
+    // this.renderer = new CanvasRenderer(w, h, options);
+    this.renderer = autoDetectRenderer(w, h, options);
     canvasContainer.appendChild(this.renderer.view)
 
     this.scene = new Container();
@@ -59,20 +70,55 @@ class WocViz {
   }
 
   addObjects() {
+
     const objNum = data.length;
+    this.blocks = [];
     for (let i = 0; i < objNum; i++) {
 
       const radius = 10 + 100 * Math.random();
-      const { x, y } = getRandomMinMaxVectorScreen(radius);
 
       const blockData = data[i];
       blockData.radius = radius;
 
-      const block = new Block(blockData)
+      const block = new Block(blockData);
+      const { x, y } = getRandomMinMaxVectorScreen(7, 7, block.width, block.height);
       block.position.x = x;
       block.position.y = y;
 
+      this.blocks.push(block);
+
       this.scene.addChild(block);
+    }
+  }
+
+  generateLines() {
+    let dots = [];
+    for (const block of this.blocks) {
+      dots = dots.concat(block.dots);
+    }
+
+    const groupDots = groupBy(dots, (dot) => dot.dotType);
+
+    let first = false;
+
+    for (const group of Object.keys(groupDots)) {
+      const line = new Graphics();
+      first = true;
+      this.scene.addChild(line);
+
+      for (const dot of groupDots[group]) {
+        const { x, y } = dot.getGlobalPoint();
+        if(first) {
+          line.moveTo(x, y);
+          first = false;
+        } else {
+          line.lineStyle(0.5, dot.color);
+          line.lineTo(x, y);
+        }
+      }
+
+      line.endFill();
+
     }
   }
 
@@ -107,14 +153,16 @@ class WocViz {
     w = w || window.innerWidth;
     h = h || window.innerHeight;
 
-    SIZE.w = w;
-    SIZE.w2 = w / 2;
-    SIZE.wr = w / window.devicePixelRatio;
-    SIZE.h = h;
-    SIZE.h2 = h / 2;
-    SIZE.hr = h / window.devicePixelRatio;
+    setSize({
+      w: w,
+      w2: w / 2,
+      wr: w / window.devicePixelRatio,
+      h: h,
+      h2: h / 2,
+      hr: h / window.devicePixelRatio,
+    })
 
-    this.renderer.resize(SIZE.w, SIZE.h);
+    this.renderer.resize(getSize().w, getSize().h);
   }
 }
 

@@ -1,15 +1,22 @@
-import { Container, Graphics } from 'pixi.js/src';
+import { Graphics } from 'pixi.js/src';
 
-export default class ColorDot extends Container {
-  constructor(color) {
+export default class ColorDot extends Graphics {
+  constructor(data) {
     super();
-    const radius = 1;
+    const radius = 3;
+    const { color, id/*, value */ } = data;
 
-    const graph = new Graphics();
-    graph.beginFill(color);
-    graph.drawCircle(0, 0, radius);
-    graph.endFill();
+    this.dotType = id;
+    this.color = color;
 
-    this.addChild(graph);
+    // console.log(data);
+
+    this.beginFill(color);
+    this.drawCircle(0, 0, radius);
+    this.endFill();
+  }
+
+  getGlobalPoint() {
+    return this.toGlobal({x: 0, y: 0});
   }
 }

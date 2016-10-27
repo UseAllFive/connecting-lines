@@ -5,5 +5,6 @@ const app = new WocViz({
 	height: window.innerHeight,
   canvasContainer: document.body
 });
+
 window.onresize = app.onResize.bind(app);
 window.onkeyup = app.onKeyUp.bind(app);

@@ -15,22 +15,22 @@ export const types = [
 export const data = [
   {
     types: [0, 1],
-    title: 'The Kitchen Show',
+    title: 'The Kitchen\nShow',
     images: [],
   },
   {
     types: [1, 2, 3, 5],
-    title: 'Hotel Carlton',
+    title: 'Hotel\nCarlton',
     images: [],
   },
   {
     types: [2, 3, 6, 7],
-    title: 'Safety Curtain',
+    title: 'Safety\nCurtain',
     images: [],
   },
   {
     types: [3, 4, 1],
-    title: 'Take Me I’m Yours',
+    title: 'Take Me\nI’m Yours',
     images: [],
   },
   {
@@ -45,7 +45,7 @@ export const data = [
   },
   {
     types: [6],
-    title: 'Indian Highway',
+    title: 'Indian\nHighway',
     images: [],
   },
   {
@@ -55,27 +55,27 @@ export const data = [
   },
   {
     types: [8, 9, 0],
-    title: 'To The Moon Via The Beach',
+    title: 'To The Moon\nVia The Beach',
     images: [],
   },
   {
     types: [9, 10],
-    title: 'Experiment Marathon',
+    title: 'Experiment\nMarathon',
     images: [],
   },
   {
     types: [10, 0],
-    title: 'Poetry Will be Made By All',
+    title: 'Poetry Will be\nMade By All',
     images: [],
   },
   {
     types: [10, 1, 4, 5, 6],
-    title: 'China Power Station',
+    title: 'China Power\nStation',
     images: [],
   },
   {
     types: [10, 2],
-    title: 'Il Tempo Del Postino',
+    title: 'Il Tempo Del\nPostino',
     images: [],
   },
 ];
