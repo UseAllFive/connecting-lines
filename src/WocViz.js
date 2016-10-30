@@ -5,8 +5,8 @@ import {
   Container } from 'pixi.js/src';
 import { groupBy } from 'lodash';
 
-import { setSize, getSize, DEBUG, setData, getData } from './utils/config';
-import { getRandomMinMaxVectorScreen } from './utils/random';
+import { setSize, getSize, DEBUG, setData, getData, setMinHeight } from './utils/config';
+import { roundRandom, random, round } from './utils/Maths';
 import { loadAssets, loadFonts } from './utils/loader';
 import Renderer from './components/renderer/renderer';
 import Block from './components/block/Block';
@@ -58,7 +58,6 @@ class WocViz {
   onAssetsComplete() {
     this.createRender();
     this.addObjects();
-    this.generateLines();
 
     if(this.showDebug) {
       this.startStats();
@@ -88,38 +87,86 @@ class WocViz {
   }
 
   addObjects() {
-
     const { blocks } = this.data;
     this.blocks = [];
-    for (let i = 0; i < blocks.length; i++) {
+    this.maxWidthBlock = 0;
 
-      const blockData = blocks[i];
-
+    for (const blockData of blocks) {
       const block = new Block(blockData);
-      const { x, y } = getRandomMinMaxVectorScreen(7, 7, block.width, block.height);
-      block.position.x = x;
-      block.position.y = y;
-
+      this.maxWidthBlock = round(Math.max(this.maxWidthBlock, block.width));
       this.blocks.push(block);
-
       this.scene.addChild(block);
     }
+
+    this.calculatePositionBlocks();
+
+  }
+
+  calculatePoint(width, rowY, offset, row, i) {
+    offset = offset || {x: 0, y: 0};
+    const { wr } = getSize();
+    const area = (wr / row);
+    return {
+      x: area * i + random(area - width),
+      y: random(rowY + random(20, -10), offset.y + rowY)
+    };
+  }
+
+  calculatePositionBlocks() {
+    const { wr } = getSize();
+    const maxPerRow = round(wr / (this.maxWidthBlock * 1.5));
+    const rows = [];
+    let addedCols = 0;
+    while(addedCols < this.blocks.length) {
+      const cols = roundRandom(1, maxPerRow);
+      rows.push(cols);
+      addedCols += cols;
+    }
+
+    let index = 0;
+    let rowY = 0;
+
+    for (const row of rows) {
+      for (let i = 0; i < row; i++) {
+        if(index >= this.blocks.length ) {
+          break;
+        }
+        const block = this.blocks[index];
+        const offset = {x: 0, y: rowY === 0 ? 20 : 0};
+        const point = this.calculatePoint(block.width, rowY, offset, row, i);
+        block.x = point.x;
+        block.y = point.y;
+        index++;
+      }
+      rowY += 180;
+    }
+
+    this.generateLines();
+
+    setMinHeight(this.scene.height + 75);
+    this.resizeRenderer();
   }
 
   generateLines() {
+    if(this.containerLines) {
+      this.containerLines.destroy(true);
+      this.containerLines = null;
+    }
+
     let dots = [];
     for (const block of this.blocks) {
       dots = dots.concat(block.dots);
     }
 
     const groupDots = groupBy(dots, (dot) => dot.dotType);
+    this.containerLines = new Container();
 
     let first = false;
 
     for (const group of Object.keys(groupDots)) {
       const line = new Graphics();
       first = true;
-      this.scene.addChild(line);
+      this.containerLines.addChild(line);
 
       for (const dot of groupDots[group]) {
         const { x, y } = dot.getGlobalPoint();
@@ -133,8 +180,9 @@ class WocViz {
       }
 
       line.endFill();
-
     }
+
+    this.scene.addChild(this.containerLines);
   }
 
   startGUI() {
@@ -157,6 +205,10 @@ class WocViz {
     if(this.autoRender) requestAnimationFrame(this.update.bind(this));
   }
 
+  resizeRenderer() {
+    this.renderer.resize(getSize().wr, Math.max(getSize().minHeight, getSize().hr));
+  }
+
   /*
   events
   */
@@ -177,7 +229,9 @@ class WocViz {
       hr: h / window.devicePixelRatio,
     })
 
-    this.renderer.resize(getSize().w, getSize().h);
+    this.calculatePositionBlocks();
+    this.resizeRenderer();
+
   }
 }
 

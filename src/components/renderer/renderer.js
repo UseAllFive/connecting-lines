@@ -14,14 +14,14 @@ let instance = null;
 
 export default class Renderer {
   constructor(forceCanvas) {
-    
-    const { w, h } = getSize();
+
+    const { wr, hr } = getSize();
 
     if(!instance) {
       if(forceCanvas) {
-        instance = new CanvasRenderer(w, h, options);
+        instance = new CanvasRenderer(wr, hr, options);
       } else {
-        instance = autoDetectRenderer(w, h, options);
+        instance = autoDetectRenderer(wr, hr, options);
       }
     }
 

@@ -1,4 +1,4 @@
-import { floor } from './Maths';
+import { round } from './Maths';
 
 export const DEBUG = true;
 
@@ -14,8 +14,12 @@ export function getData() { return DATA };
 export function setSize (sSize) {
   SIZE = Object.assign(SIZE, sSize);
   for (const size of Object.keys(SIZE)) {
-    SIZE[size] = floor(SIZE[size]);
+    SIZE[size] = round(SIZE[size]);
   }
+}
+
+export function setMinHeight(h) {
+  SIZE.minHeight = round(h);
 }
 
 export function getSize () {

@@ -56763,7 +56763,7 @@ var _lodash = require('lodash');
 
 var _config = require('./utils/config');
 
-var _random = require('./utils/random');
+var _Maths = require('./utils/Maths');
 
 var _loader = require('./utils/loader');
 
@@ -56844,7 +56844,6 @@ var WocViz = function () {
     value: function onAssetsComplete() {
       this.createRender();
       this.addObjects();
-      this.generateLines();
 
       if (this.showDebug) {
         this.startStats();
@@ -56880,37 +56879,20 @@ var WocViz = function () {
       var blocks = this.data.blocks;
 
       this.blocks = [];
-      for (var i = 0; i < blocks.length; i++) {
+      this.maxWidthBlock = 0;
 
-        var blockData = blocks[i];
-
-        var block = new _Block2.default(blockData);
-
-        var _getRandomMinMaxVecto = (0, _random.getRandomMinMaxVectorScreen)(7, 7, block.width, block.height),
-            x = _getRandomMinMaxVecto.x,
-            y = _getRandomMinMaxVecto.y;
-
-        block.position.x = x;
-        block.position.y = y;
-
-        this.blocks.push(block);
-
-        this.scene.addChild(block);
-      }
-    }
-  }, {
-    key: 'generateLines',
-    value: function generateLines() {
-      var dots = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = this.blocks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var block = _step.value;
+        for (var _iterator = blocks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var blockData = _step.value;
 
-          dots = dots.concat(block.dots);
+          var block = new _Block2.default(blockData);
+          this.maxWidthBlock = (0, _Maths.round)(Math.max(this.maxWidthBlock, block.width));
+          this.blocks.push(block);
+          this.scene.addChild(block);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -56927,60 +56909,60 @@ var WocViz = function () {
         }
       }
 
-      var groupDots = (0, _lodash.groupBy)(dots, function (dot) {
-        return dot.dotType;
-      });
+      this.calculatePositionBlocks();
+    }
+  }, {
+    key: 'calculatePoint',
+    value: function calculatePoint(width, rowY, offset, row, i) {
+      offset = offset || { x: 0, y: 0 };
 
-      var first = false;
+      var _getSize = (0, _config.getSize)(),
+          wr = _getSize.wr;
+
+      var area = wr / row;
+      return {
+        x: area * i + (0, _Maths.random)(area - width),
+        y: (0, _Maths.random)(rowY + (0, _Maths.random)(20, -10), offset.y + rowY)
+      };
+    }
+  }, {
+    key: 'calculatePositionBlocks',
+    value: function calculatePositionBlocks() {
+      var _getSize2 = (0, _config.getSize)(),
+          wr = _getSize2.wr;
+
+      var maxPerRow = (0, _Maths.round)(wr / (this.maxWidthBlock * 1.5));
+      var rows = [];
+      var addedCols = 0;
+      while (addedCols < this.blocks.length) {
+        var cols = (0, _Maths.roundRandom)(1, maxPerRow);
+        rows.push(cols);
+        addedCols += cols;
+      }
+
+      var index = 0;
+      var rowY = 0;
 
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = Object.keys(groupDots)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var group = _step2.value;
+        for (var _iterator2 = rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var row = _step2.value;
 
-          var line = new _src.Graphics();
-          first = true;
-          this.scene.addChild(line);
-
-          var _iteratorNormalCompletion3 = true;
-          var _didIteratorError3 = false;
-          var _iteratorError3 = undefined;
-
-          try {
-            for (var _iterator3 = groupDots[group][Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-              var dot = _step3.value;
-
-              var _dot$getGlobalPoint = dot.getGlobalPoint(),
-                  x = _dot$getGlobalPoint.x,
-                  y = _dot$getGlobalPoint.y;
-
-              if (first) {
-                line.moveTo(x, y);
-                first = false;
-              } else {
-                line.lineStyle(0.5, dot.color);
-                line.lineTo(x, y);
-              }
+          for (var i = 0; i < row; i++) {
+            if (index >= this.blocks.length) {
+              break;
             }
-          } catch (err) {
-            _didIteratorError3 = true;
-            _iteratorError3 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                _iterator3.return();
-              }
-            } finally {
-              if (_didIteratorError3) {
-                throw _iteratorError3;
-              }
-            }
+            var block = this.blocks[index];
+            var offset = { x: 0, y: rowY === 0 ? 20 : 0 };
+            var point = this.calculatePoint(block.width, rowY, offset, row, i);
+            block.x = point.x;
+            block.y = point.y;
+            index++;
           }
-
-          line.endFill();
+          rowY += 180;
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -56996,6 +56978,118 @@ var WocViz = function () {
           }
         }
       }
+
+      this.generateLines();
+
+      (0, _config.setMinHeight)(this.scene.height + 75);
+      this.resizeRenderer();
+    }
+  }, {
+    key: 'generateLines',
+    value: function generateLines() {
+      if (this.containerLines) {
+        this.containerLines.destroy(true);
+        this.containerLines = null;
+      }
+
+      var dots = [];
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = this.blocks[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var block = _step3.value;
+
+          dots = dots.concat(block.dots);
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      var groupDots = (0, _lodash.groupBy)(dots, function (dot) {
+        return dot.dotType;
+      });
+      this.containerLines = new _src.Container();
+
+      var first = false;
+
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = Object.keys(groupDots)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var group = _step4.value;
+
+          var line = new _src.Graphics();
+          first = true;
+          this.containerLines.addChild(line);
+
+          var _iteratorNormalCompletion5 = true;
+          var _didIteratorError5 = false;
+          var _iteratorError5 = undefined;
+
+          try {
+            for (var _iterator5 = groupDots[group][Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+              var dot = _step5.value;
+
+              var _dot$getGlobalPoint = dot.getGlobalPoint(),
+                  x = _dot$getGlobalPoint.x,
+                  y = _dot$getGlobalPoint.y;
+
+              if (first) {
+                line.moveTo(x, y);
+                first = false;
+              } else {
+                line.lineStyle(0.5, dot.color);
+                line.lineTo(x, y);
+              }
+            }
+          } catch (err) {
+            _didIteratorError5 = true;
+            _iteratorError5 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                _iterator5.return();
+              }
+            } finally {
+              if (_didIteratorError5) {
+                throw _iteratorError5;
+              }
+            }
+          }
+
+          line.endFill();
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
+
+      this.scene.addChild(this.containerLines);
     }
   }, {
     key: 'startGUI',
@@ -57017,6 +57111,11 @@ var WocViz = function () {
 
       if (this.stats) this.stats.end();
       if (this.autoRender) requestAnimationFrame(this.update.bind(this));
+    }
+  }, {
+    key: 'resizeRenderer',
+    value: function resizeRenderer() {
+      this.renderer.resize((0, _config.getSize)().wr, Math.max((0, _config.getSize)().minHeight, (0, _config.getSize)().hr));
     }
 
     /*
@@ -57041,7 +57140,8 @@ var WocViz = function () {
         hr: h / window.devicePixelRatio
       });
 
-      this.renderer.resize((0, _config.getSize)().w, (0, _config.getSize)().h);
+      this.calculatePositionBlocks();
+      this.resizeRenderer();
     }
   }]);
 
@@ -57050,7 +57150,7 @@ var WocViz = function () {
 
 exports.default = WocViz;
 
-},{"./components/block/Block":179,"./components/renderer/renderer":181,"./utils/config":185,"./utils/loader":186,"./utils/random":187,"dat-gui":2,"lodash":8,"pixi.js/src":133,"stats-js":175}],179:[function(require,module,exports){
+},{"./components/block/Block":179,"./components/renderer/renderer":181,"./utils/Maths":184,"./utils/config":185,"./utils/loader":186,"dat-gui":2,"lodash":8,"pixi.js/src":133,"stats-js":175}],179:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -57184,6 +57284,7 @@ var Block = function (_Container) {
 
           sprite.x = pos.x;
           sprite.y = pos.y;
+          sprite.alpha = .5;
 
           this.addChild(sprite);
         }
@@ -57374,14 +57475,14 @@ var Renderer = function Renderer(forceCanvas) {
   _classCallCheck(this, Renderer);
 
   var _getSize = (0, _config.getSize)(),
-      w = _getSize.w,
-      h = _getSize.h;
+      wr = _getSize.wr,
+      hr = _getSize.hr;
 
   if (!instance) {
     if (forceCanvas) {
-      instance = new _src.CanvasRenderer(w, h, options);
+      instance = new _src.CanvasRenderer(wr, hr, options);
     } else {
-      instance = (0, _src.autoDetectRenderer)(w, h, options);
+      instance = (0, _src.autoDetectRenderer)(wr, hr, options);
     }
   }
 
@@ -57581,8 +57682,16 @@ var random = exports.random = function random(max, min) {
   return Math.random() * (max - min) + min;
 };
 
+var roundRandom = exports.roundRandom = function roundRandom(max, min) {
+  return round(random(max, min));
+};
+
 var clamp = exports.clamp = function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
+};
+
+var distance = exports.distance = function distance(v1, v2) {
+  return Math.sqrt(Math.pow(v2.x - v1.x, 2) + Math.pow(v2.y - v1.y, 2));
 };
 
 },{}],185:[function(require,module,exports){
@@ -57595,6 +57704,7 @@ exports.DEBUG = undefined;
 exports.setData = setData;
 exports.getData = getData;
 exports.setSize = setSize;
+exports.setMinHeight = setMinHeight;
 exports.getSize = getSize;
 
 var _Maths = require('./Maths');
@@ -57622,7 +57732,7 @@ function setSize(sSize) {
     for (var _iterator = Object.keys(SIZE)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var size = _step.value;
 
-      SIZE[size] = (0, _Maths.floor)(SIZE[size]);
+      SIZE[size] = (0, _Maths.round)(SIZE[size]);
     }
   } catch (err) {
     _didIteratorError = true;
@@ -57638,6 +57748,10 @@ function setSize(sSize) {
       }
     }
   }
+}
+
+function setMinHeight(h) {
+  SIZE.minHeight = (0, _Maths.round)(h);
 }
 
 function getSize() {
@@ -57723,36 +57837,5 @@ var loadAssets = exports.loadAssets = function loadAssets(assets, assetsFolder, 
   _src.loader.load();
 };
 
-},{"pixi.js/src":133}],187:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getRandomMinMaxVectorScreen = exports.getRandomTitles = undefined;
-
-var _config = require('./config');
-
-var _Maths = require('./Maths');
-
-var _getData = (0, _config.getData)(),
-    data = _getData.data;
-
-var getRandomTitles = exports.getRandomTitles = function getRandomTitles() {
-  var r = Math.floor((data.length - 1) * Math.random() + .5);
-  return data[r].title;
-};
-
-var getRandomMinMaxVectorScreen = exports.getRandomMinMaxVectorScreen = function getRandomMinMaxVectorScreen(minX, minY, maxX, maxY) {
-  var _getSize = (0, _config.getSize)(),
-      wr = _getSize.wr,
-      hr = _getSize.hr;
-
-  var x = (0, _Maths.floor)((0, _Maths.random)(wr - maxX, minX));
-  var y = (0, _Maths.floor)((0, _Maths.random)(hr - maxY, minY));
-
-  return { x: x, y: y };
-};
-
-},{"./Maths":184,"./config":185}]},{},[183])
+},{"pixi.js/src":133}]},{},[183])
 //# sourceMappingURL=bundle.js.map

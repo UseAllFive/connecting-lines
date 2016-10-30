@@ -73,6 +73,7 @@ export default class Block extends Container {
 
       sprite.x = pos.x;
       sprite.y = pos.y;
+      sprite.alpha = .5;
 
       this.addChild(sprite);
     }
