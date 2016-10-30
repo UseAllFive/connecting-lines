@@ -1,13 +1,3 @@
-@font-face {
-	font-family: 'SangBleu BP';
-	src: url('../fonts/SangBleuBP-Light.eot');
-	src: url('../fonts/SangBleuBP-Light.eot?#iefix') format('embedded-opentype'),
-		url('../fonts/SangBleuBP-Light.woff') format('woff'),
-		url('../fonts/SangBleuBP-Light.ttf') format('truetype');
-	font-weight: 300;
-	font-style: normal;
-}
-
 body {
   font-family: 'SangBleu BP';
   position: fixed;

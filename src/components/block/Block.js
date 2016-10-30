@@ -1,6 +1,11 @@
-import { Container, Text } from 'pixi.js/src';
+import { Container, Text, Point, loader as Loader, Sprite } from 'pixi.js/src';
 import ColorDot from './ColorDot';
-import { types } from '../../data';
+import { getData } from '../../utils/config';
+import { random } from '../../utils/Maths';
+
+const data = getData();
+const MAX_HEIGHT = 120 / 3;
+const MAX_WIDTH = 200 / 3;
 
 const style = {
   fontFamily: 'SangBleu BP',
@@ -18,23 +23,68 @@ export default class Block extends Container {
   constructor(props) {
     super();
 
-    const { title, types } = props;
+    const { title, links, images } = props;
 
-    // this.graph = new Graphics();
-    // this.graph.lineStyle(0);
-    // this.graph.beginFill(0xFFFFFF * Math.random(), 1);
-    // this.graph.drawCircle(0, 0, radius);
-    // this.graph.endFill();
-    // this.addChild(this.graph);
-
+    this.addImages(images);
     this.addTitle(title);
-    this.addLinks(types)
+    this.addLinks(links)
+  }
+
+  addImages(images) {
+    let addedImages = 0;
+    let lastWidth = 0;
+    let lastHeight = 0;
+    let offset = 20;
+
+    for (const asset of images) {
+      const { texture } = Loader.resources[asset];
+
+      const isPortrait = texture.width < texture.height;
+      const scale = isPortrait ?
+        MAX_HEIGHT / texture.height :
+        MAX_WIDTH / texture.width;
+
+      const sprite = new Sprite(texture);
+      sprite.scale.set(scale)
+
+      lastWidth = sprite.width;
+      lastHeight = sprite.height;
+
+      const pos = new Point();
+
+      switch(addedImages) {
+        case 0:
+          pos.x = random(0, 20);
+          pos.y = random(0, 20);
+          break;
+
+        case 1:
+          pos.x = lastWidth + offset + random(0, 20);
+          pos.y = offset + random(0, 20);
+          break;
+
+        case 2:
+          pos.x = offset + random(0, 20);
+          pos.y = lastHeight + offset + random(0, 20);
+          break;
+      }
+
+      addedImages++;
+
+      sprite.x = pos.x;
+      sprite.y = pos.y;
+
+      this.addChild(sprite);
+    }
   }
 
   addLinks(links) {
     this.linksContainer = new Container();
     this.linksContainer.position.y = 2;
     this.dots = [];
+
+    const { types } = data;
+
     let row = -1;
     let col = 0;
     const offset = 7;
@@ -46,7 +96,6 @@ export default class Block extends Container {
 
       col++;
       dot.position.y = row * offset;
-
 
       this.dots.push(dot);
 

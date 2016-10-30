@@ -1,6 +1,7 @@
-import { getSize } from './config';
-import { data } from '../data';
+import { getSize, getData } from './config';
 import { random, floor } from './Maths';
+
+const { data } = getData();
 
 export const getRandomTitles = () => {
   const r = Math.floor((data.length - 1) * Math.random() + .5);

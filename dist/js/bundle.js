@@ -56765,11 +56765,15 @@ var _config = require('./utils/config');
 
 var _random = require('./utils/random');
 
-var _block = require('./components/block/block');
+var _loader = require('./utils/loader');
 
-var _block2 = _interopRequireDefault(_block);
+var _renderer = require('./components/renderer/renderer');
 
-var _data = require('./data');
+var _renderer2 = _interopRequireDefault(_renderer);
+
+var _Block = require('./components/block/Block');
+
+var _Block2 = _interopRequireDefault(_Block);
 
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : { default: obj };
@@ -56781,19 +56785,37 @@ function _classCallCheck(instance, Constructor) {
   }
 }
 
+/**
+ * @class WocViz
+ * @constructor
+ * @see index.js for params description
+ */
 var WocViz = function () {
   function WocViz(props) {
+    var _this = this;
+
     _classCallCheck(this, WocViz);
 
-    this.autoRender = props.autoRender || true;
     var width = props.width,
         height = props.height,
-        canvasContainer = props.canvasContainer;
+        autoRender = props.autoRender,
+        forceCanvas = props.forceCanvas,
+        canvasContainer = props.canvasContainer,
+        data = props.data,
+        showDebug = props.showDebug;
+
+    this.autoRender = autoRender || true;
+    this.canvasContainer = canvasContainer;
+    this.forceCanvas = forceCanvas || false;
 
     this.renderer = null;
     this.scene = null;
     this.counter = 0;
     this.gui = null;
+    this.showDebug = showDebug || false;
+
+    (0, _config.setData)(data);
+    this.data = (0, _config.getData)();
 
     (0, _config.setSize)({
       w: width,
@@ -56804,17 +56826,34 @@ var WocViz = function () {
       hr: height / window.devicePixelRatio
     });
 
-    // this.loadFonts();
-    this.startStats();
-    this.createRender(canvasContainer);
-    this.addObjects();
-    this.generateLines();
-    this.startGUI();
+    var fontNames = ['SangBleu BP', 'GT Sectra Trial', 'Castledown'];
 
-    if (this.autoRender) this.update();
+    (0, _loader.loadFonts)(fontNames, this.canvasContainer);
+
+    var _data = this.data,
+        assets = _data.assets,
+        assetsFolder = _data.assetsFolder;
+
+    (0, _loader.loadAssets)(assets, assetsFolder, function () {
+      _this.onAssetsComplete();
+    });
   }
 
   _createClass(WocViz, [{
+    key: 'onAssetsComplete',
+    value: function onAssetsComplete() {
+      this.createRender();
+      this.addObjects();
+      this.generateLines();
+
+      if (this.showDebug) {
+        this.startStats();
+        this.startGUI();
+      }
+
+      if (this.autoRender) this.update();
+    }
+  }, {
     key: 'startStats',
     value: function startStats() {
       this.stats = new _statsJs2.default();
@@ -56824,25 +56863,13 @@ var WocViz = function () {
       this.stats.domElement.style.left = 0;
       this.stats.domElement.style.zIndex = 50;
       document.body.appendChild(this.stats.domElement);
-      document.querySelector('.help').style.display = this.stats.domElement.style.display == 'block' ? "none" : "block";
     }
   }, {
     key: 'createRender',
-    value: function createRender(canvasContainer) {
-      var options = {
-        resolution: window.devicePixelRatio,
-        antialias: true,
-        backgroundColor: 0xFFFFFF
-      };
+    value: function createRender() {
 
-      var _getSize = (0, _config.getSize)(),
-          w = _getSize.w,
-          h = _getSize.h;
-      // this.renderer = new CanvasRenderer(w, h, options);
-
-
-      this.renderer = (0, _src.autoDetectRenderer)(w, h, options);
-      canvasContainer.appendChild(this.renderer.view);
+      this.renderer = new _renderer2.default(this.forceCanvas);
+      this.canvasContainer.appendChild(this.renderer.view);
 
       this.scene = new _src.Container();
       this.scene.interactive = true;
@@ -56850,17 +56877,14 @@ var WocViz = function () {
   }, {
     key: 'addObjects',
     value: function addObjects() {
+      var blocks = this.data.blocks;
 
-      var objNum = _data.data.length;
       this.blocks = [];
-      for (var i = 0; i < objNum; i++) {
+      for (var i = 0; i < blocks.length; i++) {
 
-        var radius = 10 + 100 * Math.random();
+        var blockData = blocks[i];
 
-        var blockData = _data.data[i];
-        blockData.radius = radius;
-
-        var block = new _block2.default(blockData);
+        var block = new _Block2.default(blockData);
 
         var _getRandomMinMaxVecto = (0, _random.getRandomMinMaxVectorScreen)(7, 7, block.width, block.height),
             x = _getRandomMinMaxVecto.x,
@@ -56987,11 +57011,11 @@ var WocViz = function () {
   }, {
     key: 'update',
     value: function update() {
-      if (this.autoRender) this.stats.begin();
+      if (this.stats) this.stats.begin();
 
       this.renderer.render(this.scene);
 
-      if (this.autoRender) this.stats.end();
+      if (this.stats) this.stats.end();
       if (this.autoRender) requestAnimationFrame(this.update.bind(this));
     }
 
@@ -57026,7 +57050,228 @@ var WocViz = function () {
 
 exports.default = WocViz;
 
-},{"./components/block/block":180,"./data":181,"./utils/config":184,"./utils/random":185,"dat-gui":2,"lodash":8,"pixi.js/src":133,"stats-js":175}],179:[function(require,module,exports){
+},{"./components/block/Block":179,"./components/renderer/renderer":181,"./utils/config":185,"./utils/loader":186,"./utils/random":187,"dat-gui":2,"lodash":8,"pixi.js/src":133,"stats-js":175}],179:[function(require,module,exports){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+  };
+}();
+
+var _src = require('pixi.js/src');
+
+var _ColorDot = require('./ColorDot');
+
+var _ColorDot2 = _interopRequireDefault(_ColorDot);
+
+var _config = require('../../utils/config');
+
+var _Maths = require('../../utils/Maths');
+
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _possibleConstructorReturn(self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
+  }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+var data = (0, _config.getData)();
+var MAX_HEIGHT = 120 / 3;
+var MAX_WIDTH = 200 / 3;
+
+var style = {
+  fontFamily: 'SangBleu BP',
+  fontSize: 21,
+  fill: 0x000000,
+  align: 'left'
+};
+
+var Block = function (_Container) {
+  _inherits(Block, _Container);
+
+  /**
+   * @constructor
+   * @param title
+   * @param radius
+   */
+  function Block(props) {
+    _classCallCheck(this, Block);
+
+    var _this = _possibleConstructorReturn(this, (Block.__proto__ || Object.getPrototypeOf(Block)).call(this));
+
+    var title = props.title,
+        links = props.links,
+        images = props.images;
+
+    _this.addImages(images);
+    _this.addTitle(title);
+    _this.addLinks(links);
+    return _this;
+  }
+
+  _createClass(Block, [{
+    key: 'addImages',
+    value: function addImages(images) {
+      var addedImages = 0;
+      var lastWidth = 0;
+      var lastHeight = 0;
+      var offset = 20;
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = images[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var asset = _step.value;
+          var texture = _src.loader.resources[asset].texture;
+
+          var isPortrait = texture.width < texture.height;
+          var scale = isPortrait ? MAX_HEIGHT / texture.height : MAX_WIDTH / texture.width;
+
+          var sprite = new _src.Sprite(texture);
+          sprite.scale.set(scale);
+
+          lastWidth = sprite.width;
+          lastHeight = sprite.height;
+
+          var pos = new _src.Point();
+
+          switch (addedImages) {
+            case 0:
+              pos.x = (0, _Maths.random)(0, 20);
+              pos.y = (0, _Maths.random)(0, 20);
+              break;
+
+            case 1:
+              pos.x = lastWidth + offset + (0, _Maths.random)(0, 20);
+              pos.y = offset + (0, _Maths.random)(0, 20);
+              break;
+
+            case 2:
+              pos.x = offset + (0, _Maths.random)(0, 20);
+              pos.y = lastHeight + offset + (0, _Maths.random)(0, 20);
+              break;
+          }
+
+          addedImages++;
+
+          sprite.x = pos.x;
+          sprite.y = pos.y;
+
+          this.addChild(sprite);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'addLinks',
+    value: function addLinks(links) {
+      this.linksContainer = new _src.Container();
+      this.linksContainer.position.y = 2;
+      this.dots = [];
+
+      var types = data.types;
+
+      var row = -1;
+      var col = 0;
+      var offset = 7;
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = links[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var link = _step2.value;
+
+          var dot = new _ColorDot2.default(types[link]);
+          dot.position.x = col % 2 * offset;
+
+          if (col % 2 === 0) row++;
+
+          col++;
+          dot.position.y = row * offset;
+
+          this.dots.push(dot);
+
+          this.linksContainer.addChild(dot);
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      this.linksContainer.position.y = offset;
+      this.addChild(this.linksContainer);
+    }
+  }, {
+    key: 'addTitle',
+    value: function addTitle(title) {
+      this.title = new _src.Text(title, style);
+      this.title.position.x = 15;
+      this.addChild(this.title);
+    }
+  }, {
+    key: 'updateTitle',
+    value: function updateTitle(title) {
+      if (this.title) this.title.txt = title;
+    }
+  }]);
+
+  return Block;
+}(_src.Container);
+
+exports.default = Block;
+
+},{"../../utils/Maths":184,"../../utils/config":185,"./ColorDot":180,"pixi.js/src":133}],180:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -57100,36 +57345,16 @@ var ColorDot = function (_Graphics) {
 
 exports.default = ColorDot;
 
-},{"pixi.js/src":133}],180:[function(require,module,exports){
+},{"pixi.js/src":133}],181:[function(require,module,exports){
 'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-  };
-}();
-
 var _src = require('pixi.js/src');
 
-var _ColorDot = require('./ColorDot');
-
-var _ColorDot2 = _interopRequireDefault(_ColorDot);
-
-var _data = require('../../data');
-
-function _interopRequireDefault(obj) {
-  return obj && obj.__esModule ? obj : { default: obj };
-}
+var _config = require('../../utils/config');
 
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -57137,213 +57362,209 @@ function _classCallCheck(instance, Constructor) {
   }
 }
 
-function _possibleConstructorReturn(self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
-}
-
-function _inherits(subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
-  }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-}
-
-var style = {
-  fontFamily: 'SangBleu BP',
-  fontSize: 21,
-  fill: 0x000000,
-  align: 'left'
+var options = {
+  resolution: window.devicePixelRatio,
+  antialias: true,
+  backgroundColor: 0xFFFFFF
 };
 
-var Block = function (_Container) {
-  _inherits(Block, _Container);
+var instance = null;
 
-  /**
-   * @constructor
-   * @param title
-   * @param radius
-   */
-  function Block(props) {
-    _classCallCheck(this, Block);
+var Renderer = function Renderer(forceCanvas) {
+  _classCallCheck(this, Renderer);
 
-    var _this = _possibleConstructorReturn(this, (Block.__proto__ || Object.getPrototypeOf(Block)).call(this));
+  var _getSize = (0, _config.getSize)(),
+      w = _getSize.w,
+      h = _getSize.h;
 
-    var title = props.title,
-        types = props.types;
-
-    // this.graph = new Graphics();
-    // this.graph.lineStyle(0);
-    // this.graph.beginFill(0xFFFFFF * Math.random(), 1);
-    // this.graph.drawCircle(0, 0, radius);
-    // this.graph.endFill();
-    // this.addChild(this.graph);
-    //
-
-    console.log(types);
-
-    _this.addTitle(title);
-    _this.addLinks(types);
-    return _this;
+  if (!instance) {
+    if (forceCanvas) {
+      instance = new _src.CanvasRenderer(w, h, options);
+    } else {
+      instance = (0, _src.autoDetectRenderer)(w, h, options);
+    }
   }
 
-  _createClass(Block, [{
-    key: 'addLinks',
-    value: function addLinks(links) {
-      this.linksContainer = new _src.Container();
-      this.linksContainer.position.y = 2;
-      this.dots = [];
-      var row = -1;
-      var col = 0;
-      var offset = 7;
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+  return instance;
+};
 
-      try {
-        for (var _iterator = links[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var link = _step.value;
+exports.default = Renderer;
 
-          var dot = new _ColorDot2.default(_data.types[link]);
-          dot.position.x = col % 2 * offset;
-          if (col % 2 === 0) row++;
-          col++;
-          dot.position.y = row * offset;
-
-          this.dots.push(dot);
-
-          this.linksContainer.addChild(dot);
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      this.linksContainer.position.y = offset;
-      this.addChild(this.linksContainer);
-    }
-  }, {
-    key: 'addTitle',
-    value: function addTitle(title) {
-      this.title = new _src.Text(title, style);
-      this.title.position.x = 15;
-      this.addChild(this.title);
-    }
-  }, {
-    key: 'getLinksPositions',
-    value: function getLinksPositions() {
-      // console.log(this.dots, 'asda');
-      // for (const dot of this.dots) {
-      // const p = new Point(dot.x, dot.y);
-      // console.log();
-      // console.log(dot.toGlobal(p));
-      // }
-    }
-  }, {
-    key: 'updateTitle',
-    value: function updateTitle(title) {
-      if (this.title) this.title.txt = title;
-    }
-  }]);
-
-  return Block;
-}(_src.Container);
-
-exports.default = Block;
-
-},{"../../data":181,"./ColorDot":179,"pixi.js/src":133}],181:[function(require,module,exports){
+},{"../../utils/config":185,"pixi.js/src":133}],182:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var types = exports.types = [{ id: 0, color: 0x3440FB, value: 'ARCHITECTURE' }, { id: 1, color: 0x9B4AB5, value: 'BEYOND MUSEUMS' }, { id: 2, color: 0x67B2DC, value: 'FUN PALACE' }, { id: 3, color: 0x9DDE61, value: 'GLOBALIZATION' }, { id: 4, color: 0xFD6CE8, value: 'INSTRUCTION-BASED ART' }, { id: 5, color: 0xFC2B1C, value: 'LITERATURE' }, { id: 6, color: 0xEFCF43, value: 'LIVE ART' }, { id: 7, color: 0xFCA747, value: 'PROTEST AGAINST FORGETTING' }, { id: 8, color: 0xFFFFFF * Math.random(), value: 'RULES OF THE GAME' }, { id: 9, color: 0xFFFFFF * Math.random(), value: 'SCIENCE' }, { id: 10, color: 0xFFFFFF * Math.random(), value: 'URBANISM/CITIES' }];
+var assetsFolder = '/static/images/';
 
-var data = exports.data = [{
-  types: [0, 1],
-  title: 'The Kitchen\nShow',
-  images: []
-}, {
-  types: [1, 2, 3, 5],
-  title: 'Hotel\nCarlton',
-  images: []
-}, {
-  types: [2, 3, 6, 7],
-  title: 'Safety\nCurtain',
-  images: []
-}, {
-  types: [3, 4, 1],
-  title: 'Take Me\nI’m Yours',
-  images: []
-}, {
-  types: [4, 5, 10],
-  title: 'Do It',
-  images: []
-}, {
-  types: [5, 6, 9],
-  title: '11 Rooms',
-  images: []
-}, {
-  types: [6],
-  title: 'Indian\nHighway',
-  images: []
-}, {
-  types: [7, 8, 1],
-  title: 'Fun Palace',
-  images: []
-}, {
-  types: [8, 9, 0],
-  title: 'To The Moon\nVia The Beach',
-  images: []
-}, {
-  types: [9, 10],
-  title: 'Experiment\nMarathon',
-  images: []
-}, {
-  types: [10, 0],
-  title: 'Poetry Will be\nMade By All',
-  images: []
-}, {
-  types: [10, 1, 4, 5, 6],
-  title: 'China Power\nStation',
-  images: []
-}, {
-  types: [10, 2],
-  title: 'Il Tempo Del\nPostino',
-  images: []
-}];
+var data = exports.data = {
+  assetsFolder: assetsFolder,
+  types: [{ id: 0, color: 0x3440FB, value: 'ARCHITECTURE' }, { id: 1, color: 0x9B4AB5, value: 'BEYOND MUSEUMS' }, { id: 2, color: 0x67B2DC, value: 'FUN PALACE' }, { id: 3, color: 0x9DDE61, value: 'GLOBALIZATION' }, { id: 4, color: 0xFD6CE8, value: 'INSTRUCTION-BASED ART' }, { id: 5, color: 0xFC2B1C, value: 'LITERATURE' }, { id: 6, color: 0xEFCF43, value: 'LIVE ART' }, { id: 7, color: 0xFCA747, value: 'PROTEST AGAINST FORGETTING' }, { id: 8, color: 0xFFFFFF * Math.random(), value: 'RULES OF THE GAME' }, { id: 9, color: 0xFFFFFF * Math.random(), value: 'SCIENCE' }, { id: 10, color: 0xFFFFFF * Math.random(), value: 'URBANISM/CITIES' }],
+  blocks: [{
+    id: 0,
+    links: [0, 1],
+    title: 'The Kitchen\nShow',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image0', 'image1', 'image14']
+  }, {
+    id: 1,
+    links: [1, 2, 3, 5],
+    title: 'Hotel\nCarlton',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image0', 'image13', 'image14']
+  }, {
+    id: 2,
+    links: [2, 3, 6, 7],
+    title: 'Safety\nCurtain',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image15', 'image16']
+  }, {
+    id: 3,
+    links: [3, 4, 1],
+    title: 'Take Me\nI’m Yours',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image12', 'image13', 'image14']
+  }, {
+    id: 4,
+    links: [4, 5, 10],
+    title: 'Do It',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image9', 'image10', 'image11']
+  }, {
+    id: 5,
+    links: [5, 6, 9],
+    title: '11 Rooms',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image6', 'image7', 'image8']
+  }, {
+    id: 6,
+    links: [6],
+    title: 'Indian\nHighway',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image6', 'image7']
+  }, {
+    id: 7,
+    links: [7, 8, 1],
+    title: 'Fun Palace',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image6']
+  }, {
+    id: 8,
+    links: [8, 9, 0],
+    title: 'To The Moon\nVia The Beach',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image5']
+  }, {
+    id: 9,
+    links: [9, 10],
+    title: 'Experiment\nMarathon',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image3', 'image2', 'image4']
+  }, {
+    id: 10,
+    links: [10, 0],
+    title: 'Poetry Will be\nMade By All',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image3', 'image2']
+  }, {
+    id: 11,
+    links: [10, 1, 4, 5, 6],
+    title: 'China Power\nStation',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image1', 'image2']
+  }, {
+    id: 12,
+    links: [10, 2],
+    title: 'Il Tempo Del\nPostino',
+    body: 'Basel Switzerland, 2014',
+    link: 'View Full Exhibition',
+    url: 'http://google.com',
+    images: ['image0', 'image1']
+  }],
+  assets: [{ id: 'image0', src: 'image_00000.jpg' }, { id: 'image1', src: 'image_00001.jpg' }, { id: 'image2', src: 'image_00002.jpg' }, { id: 'image3', src: 'image_00003.jpg' }, { id: 'image4', src: 'image_00004.jpg' }, { id: 'image5', src: 'image_00005.jpg' }, { id: 'image6', src: 'image_00006.jpg' }, { id: 'image7', src: 'image_00007.jpg' }, { id: 'image8', src: 'image_00008.jpg' }, { id: 'image9', src: 'image_00009.jpg' }, { id: 'image10', src: 'image_00010.jpg' }, { id: 'image11', src: 'image_00011.jpg' }, { id: 'image12', src: 'image_00012.jpg' }, { id: 'image13', src: 'image_00013.jpg' }, { id: 'image14', src: 'image_00014.jpg' }, { id: 'image15', src: 'image_00015.jpg' }, { id: 'image16', src: 'image_00016.jpg' }]
+};
 
-},{}],182:[function(require,module,exports){
+},{}],183:[function(require,module,exports){
 'use strict';
 
 var _WocViz = require('./WocViz');
 
 var _WocViz2 = _interopRequireDefault(_WocViz);
 
+var _data = require('./data.js');
+
 function _interopRequireDefault(obj) {
-	return obj && obj.__esModule ? obj : { default: obj };
+  return obj && obj.__esModule ? obj : { default: obj };
 }
 
+/**
+ * @type {WocViz}
+ * @param {object} data JSON or Object to use as Database
+ * @param {number} width of the canvas
+ * @param {number} height of the canvas
+ * @param {boolean} autoRender whether or not to use internal loop to render the scene
+ * @param {object} canvasContainer where to add the canvas dom element
+ * @param {boolean} showDebug show debug UI
+ * @param {boolean} forceCanvas whether to use the Canvas renderer instead of letting the system set whether to use WebGL or Canvas
+ */
 var app = new _WocViz2.default({
-	width: window.innerWidth,
-	height: window.innerHeight,
-	canvasContainer: document.body
+  data: _data.data,
+  width: window.innerWidth,
+  height: window.innerHeight,
+  autoRender: true,
+  canvasContainer: document.body,
+  showDebug: false,
+  forceCanvas: true
 });
 
-window.onresize = app.onResize.bind(app);
+/**
+ * @method update
+ * if {boolean} autoRender set as false
+ * you need to update the view manually inside a loop
+ * using the following method
+ */
+// app.update().bind(app);
+
+/**
+ * @summary
+ * add your event listeners here
+ */
+
+/**
+ * @summary
+ * where all data is hardcoded
+ */
+window.onresize = function () {
+  app.onResize(window.innerWidth, window.innerHeight);
+};
 window.onkeyup = app.onKeyUp.bind(app);
 
-},{"./WocViz":178}],183:[function(require,module,exports){
+},{"./WocViz":178,"./data.js":182}],184:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -57364,13 +57585,15 @@ var clamp = exports.clamp = function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
 };
 
-},{}],184:[function(require,module,exports){
+},{}],185:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DEBUG = undefined;
+exports.setData = setData;
+exports.getData = getData;
 exports.setSize = setSize;
 exports.getSize = getSize;
 
@@ -57379,16 +57602,25 @@ var _Maths = require('./Maths');
 var DEBUG = exports.DEBUG = true;
 
 var SIZE = {};
+var DATA = {};
 
-function setSize(size) {
-  SIZE = size;
+function setData(data) {
+  DATA = Object.assign(DATA, data);
+}
+
+function getData() {
+  return DATA;
+};
+
+function setSize(sSize) {
+  SIZE = Object.assign(SIZE, sSize);
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
 
   try {
     for (var _iterator = Object.keys(SIZE)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      size = _step.value;
+      var size = _step.value;
 
       SIZE[size] = (0, _Maths.floor)(SIZE[size]);
     }
@@ -57412,9 +57644,86 @@ function getSize() {
   return SIZE;
 }
 
-// export const SIZE = { };
+},{"./Maths":184}],186:[function(require,module,exports){
+'use strict';
 
-},{"./Maths":183}],185:[function(require,module,exports){
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.loadAssets = exports.loadFonts = undefined;
+
+var _src = require('pixi.js/src');
+
+var loadFonts = exports.loadFonts = function loadFonts(fonts, container) {
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = fonts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var font = _step.value;
+
+      var span = document.createElement('span');
+      span.innerHTML = 'loading font ' + font;
+      span.style.position = 'absolute';
+      span.style.visibility = 'hidden';
+      span.style.top = 0;
+      span.style.left = 0;
+      span.style['pointer-events'] = 'none';
+      container.appendChild(span);
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+};
+
+var loadAssets = exports.loadAssets = function loadAssets(assets, assetsFolder, callback) {
+  if (assets.length < 1) {
+    callback();
+    return;
+  }
+
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = assets[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var asset = _step2.value;
+
+      _src.loader.add(asset.id, assetsFolder + asset.src);
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+
+  _src.loader.once('complete', callback);
+  _src.loader.load();
+};
+
+},{"pixi.js/src":133}],187:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -57424,13 +57733,14 @@ exports.getRandomMinMaxVectorScreen = exports.getRandomTitles = undefined;
 
 var _config = require('./config');
 
-var _data = require('../data');
-
 var _Maths = require('./Maths');
 
+var _getData = (0, _config.getData)(),
+    data = _getData.data;
+
 var getRandomTitles = exports.getRandomTitles = function getRandomTitles() {
-  var r = Math.floor((_data.data.length - 1) * Math.random() + .5);
-  return _data.data[r].title;
+  var r = Math.floor((data.length - 1) * Math.random() + .5);
+  return data[r].title;
 };
 
 var getRandomMinMaxVectorScreen = exports.getRandomMinMaxVectorScreen = function getRandomMinMaxVectorScreen(minX, minY, maxX, maxY) {
@@ -57444,5 +57754,5 @@ var getRandomMinMaxVectorScreen = exports.getRandomMinMaxVectorScreen = function
   return { x: x, y: y };
 };
 
-},{"../data":181,"./Maths":183,"./config":184}]},{},[182])
+},{"./Maths":184,"./config":185}]},{},[183])
 //# sourceMappingURL=bundle.js.map

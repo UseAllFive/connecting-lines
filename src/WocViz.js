@@ -1,27 +1,38 @@
 import dat from 'dat-gui'
 import Stats from 'stats-js'
 import {
-  autoDetectRenderer,
-  // CanvasRenderer,
   Graphics,
   Container } from 'pixi.js/src';
 import { groupBy } from 'lodash';
 
-import { setSize, getSize, DEBUG } from './utils/config';
+import { setSize, getSize, DEBUG, setData, getData } from './utils/config';
 import { getRandomMinMaxVectorScreen } from './utils/random';
-import Block from './components/block/block';
-import { data } from './data';
+import { loadAssets, loadFonts } from './utils/loader';
+import Renderer from './components/renderer/renderer';
+import Block from './components/block/Block';
 
+/**
+ * @class WocViz
+ * @constructor
+ * @see index.js for params description
+ */
 class WocViz {
 
   constructor(props) {
-    this.autoRender = props.autoRender || true;
-    const { width, height, canvasContainer } = props;
+    const { width, height, autoRender, forceCanvas, canvasContainer, data, showDebug } = props;
+
+    this.autoRender = autoRender || true;
+    this.canvasContainer = canvasContainer;
+    this.forceCanvas = forceCanvas || false;
 
     this.renderer = null;
     this.scene    = null;
     this.counter  = 0;
     this.gui      = null;
+    this.showDebug = showDebug || false;
+
+    setData(data);
+    this.data = getData();
 
     setSize({
       w: width,
@@ -32,12 +43,27 @@ class WocViz {
       hr: height / window.devicePixelRatio,
     })
 
-    // this.loadFonts();
-    this.startStats();
-    this.createRender(canvasContainer);
+    const fontNames = [
+      'SangBleu BP',
+      'GT Sectra Trial',
+      'Castledown'
+    ]
+
+    loadFonts(fontNames, this.canvasContainer);
+
+    const { assets, assetsFolder } = this.data;
+    loadAssets(assets, assetsFolder, () => { this.onAssetsComplete() });
+  }
+
+  onAssetsComplete() {
+    this.createRender();
     this.addObjects();
     this.generateLines();
-    this.startGUI();
+
+    if(this.showDebug) {
+      this.startStats();
+      this.startGUI();
+    }
 
     if(this.autoRender) this.update();
   }
@@ -50,20 +76,12 @@ class WocViz {
     this.stats.domElement.style.left = 0;
     this.stats.domElement.style.zIndex = 50;
     document.body.appendChild(this.stats.domElement);
-    document.querySelector('.help').style.display = this.stats.domElement.style.display == 'block' ? "none" : "block";
   }
 
-  createRender(canvasContainer) {
-    const options = {
-      resolution: window.devicePixelRatio,
-      antialias: true,
-      backgroundColor: 0xFFFFFF
-    }
+  createRender() {
 
-    const { w, h } = getSize();
-    // this.renderer = new CanvasRenderer(w, h, options);
-    this.renderer = autoDetectRenderer(w, h, options);
-    canvasContainer.appendChild(this.renderer.view)
+    this.renderer = new Renderer(this.forceCanvas);
+    this.canvasContainer.appendChild(this.renderer.view);
 
     this.scene = new Container();
     this.scene.interactive = true;
@@ -71,14 +89,11 @@ class WocViz {
 
   addObjects() {
 
-    const objNum = data.length;
+    const { blocks } = this.data;
     this.blocks = [];
-    for (let i = 0; i < objNum; i++) {
+    for (let i = 0; i < blocks.length; i++) {
 
-      const radius = 10 + 100 * Math.random();
-
-      const blockData = data[i];
-      blockData.radius = radius;
+      const blockData = blocks[i];
 
       const block = new Block(blockData);
       const { x, y } = getRandomMinMaxVectorScreen(7, 7, block.width, block.height);
@@ -134,11 +149,11 @@ class WocViz {
   }
 
   update() {
-    if(this.autoRender) this.stats.begin();
+    if(this.stats) this.stats.begin();
 
     this.renderer.render(this.scene);
 
-    if(this.autoRender) this.stats.end()
+    if(this.stats) this.stats.end()
     if(this.autoRender) requestAnimationFrame(this.update.bind(this));
   }
 
