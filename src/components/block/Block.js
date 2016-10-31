@@ -55,22 +55,23 @@ export default class Block extends Container {
         break;
 
       case 'mouseover':
-        TweenMax.to(this.imageContainer, .5, {alpha: .35, overwrite: -1});
-        TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10, overwrite: -1});
-        TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1, overwrite: -1});
-        TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1, overwrite: -1});
+        TweenMax.to(this.imageContainer, .5, {alpha: .35});
+        TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10});
+        TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1});
+        TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1});
         break;
 
       case 'mouseout':
-        TweenMax.to(this.imageContainer, .5, {alpha: .7, overwrite: -1});
-        TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1, overwrite: -1});
-        TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos, overwrite: -1});
-        TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos, overwrite: -1});
+        TweenMax.to(this.imageContainer, .5, {alpha: .7});
+        TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1});
+        TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos});
+        TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos});
         break;
     }
   }
 
   createHitTest() {
+    this.hitTest.clear();
     this.hitTest.beginFill(0xFFFFFF, 0);
     this.hitTest.drawRect(0, 0, this.width, this.height);
     this.hitTest.endFill();
@@ -155,10 +156,12 @@ export default class Block extends Container {
     const offset = 2;
 
     this.title = new Text(title, styleTitle);
+    this.title.resolution = window.devicePixelRatio;
     this.title.position.x = 15;
     this.addChild(this.title);
 
     this.info = new Text(info, styleInfo);
+    this.info.resolution = window.devicePixelRatio;
     this.info.alpha = 0;
     this.info.position.x = 15;
     this.info.position.y = this.title.height + offset;
@@ -166,6 +169,7 @@ export default class Block extends Container {
     this.addChild(this.info);
 
     this.link = new Text(linkCopy.toUpperCase(), styleLink);
+    this.link.resolution = window.devicePixelRatio;
     this.link.alpha = 0;
     this.link.position.x = 15;
     this.link.position.y = this.info.position.y + this.info.height + offset + 3;

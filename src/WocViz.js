@@ -34,6 +34,8 @@ class WocViz {
     setData(data);
     this.data = getData();
 
+    console.log(width);
+
     setSize({
       w: width,
       w2: width / 2,
@@ -78,6 +80,8 @@ class WocViz {
   }
 
   createRender() {
+
+    const { w, h } = getSize();
 
     this.renderer = new Renderer(this.forceCanvas);
     this.canvasContainer.appendChild(this.renderer.view);
@@ -206,7 +210,7 @@ class WocViz {
   }
 
   resizeRenderer() {
-    this.renderer.resize(getSize().wr, Math.max(getSize().minHeight, getSize().hr));
+    this.renderer.resize(getSize().w, Math.max(getSize().minHeight, getSize().h));
   }
 
   /*

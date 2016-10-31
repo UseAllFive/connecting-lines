@@ -6,8 +6,9 @@ import { getSize } from '../../utils/config';
 
 const options = {
   resolution: window.devicePixelRatio,
-  antialias: false,
-  backgroundColor: 0xFFFFFF
+  antialias: true,
+  backgroundColor: 0xFFFFFF,
+  roundPixels: true,
 }
 
 let instance = null;
@@ -15,13 +16,13 @@ let instance = null;
 export default class Renderer {
   constructor(forceCanvas) {
 
-    const { wr, hr } = getSize();
+    const { w, h } = getSize();
 
     if(!instance) {
       if(forceCanvas) {
-        instance = new CanvasRenderer(wr, hr, options);
+        instance = new CanvasRenderer(w, h, options);
       } else {
-        instance = autoDetectRenderer(wr, hr, options);
+        instance = autoDetectRenderer(w, h, options);
       }
     }
 
