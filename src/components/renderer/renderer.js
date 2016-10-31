@@ -6,7 +6,7 @@ import { getSize } from '../../utils/config';
 
 const options = {
   resolution: window.devicePixelRatio,
-  antialias: true,
+  antialias: false,
   backgroundColor: 0xFFFFFF
 }
 
