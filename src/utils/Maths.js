@@ -5,9 +5,14 @@ export const random = (max, min) => {
   return Math.random() * (max - min) + min;
 };
 
+export const coin = () => Math.random() <= .5 ? 1 : -1;
+
 export const roundRandom = (max, min) => {
   return round( random(max, min) );
 }
+
+export const RAD_TO_ANGLE = 180 / Math.PI;
+export const ANGLE_TO_RAD = Math.PI / 180;
 
 export const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
