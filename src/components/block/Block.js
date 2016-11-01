@@ -55,17 +55,17 @@ export default class Block extends Container {
         break;
 
       case 'mouseover':
-        TweenMax.to(this.imageContainer, .5, {alpha: .35});
-        TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10});
-        TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1});
-        TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1});
+        TweenMax.to(this.imageContainer, .5, {alpha: .35, overwrite: 'all'});
+        TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10, overwrite: 'all'});
+        TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1, overwrite: 'all'});
+        TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1, overwrite: 'all'});
         break;
 
       case 'mouseout':
-        TweenMax.to(this.imageContainer, .5, {alpha: .7});
-        TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1});
-        TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos});
-        TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos});
+        TweenMax.to(this.imageContainer, .5, {alpha: .7, overwrite: 'all'});
+        TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1, overwrite: 'all'});
+        TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos, overwrite: 'all'});
+        TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos, overwrite: 'all'});
         break;
     }
   }

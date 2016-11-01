@@ -1,5 +1,6 @@
 import dat from 'dat-gui'
 import Stats from 'stats-js'
+import attachFastClick from 'fastclick';
 import {
   Graphics,
   Container } from 'pixi.js/src';
@@ -33,8 +34,6 @@ class WocViz {
 
     setData(data);
     this.data = getData();
-
-    console.log(width);
 
     setSize({
       w: width,
@@ -81,10 +80,11 @@ class WocViz {
 
   createRender() {
 
-    const { w, h } = getSize();
+    // const { w, h } = getSize();
 
     this.renderer = new Renderer(this.forceCanvas);
     this.canvasContainer.appendChild(this.renderer.view);
+    attachFastClick(this.canvasContainer);
 
     this.scene = new Container();
     this.scene.interactive = true;
