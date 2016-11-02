@@ -14385,7 +14385,7 @@ if (_gsScope._gsDefine) { _gsScope._gsQueue.pop()(); } //necessary in case Tween
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.16.5';
+  var VERSION = '4.16.6';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -18786,9 +18786,8 @@ if (_gsScope._gsDefine) { _gsScope._gsQueue.pop()(); } //necessary in case Tween
             othIndex = -1;
 
         while (++othIndex < length) {
-          var othArray = arrays[othIndex];
-          if (othArray !== array) {
-            result[index] = baseDifference(result[index] || array, othArray, iteratee, comparator);
+          if (othIndex != index) {
+            result[index] = baseDifference(result[index] || array, arrays[othIndex], iteratee, comparator);
           }
         }
       }
@@ -34032,7 +34031,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @memberof PIXI
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.1.0';
+var VERSION = exports.VERSION = '4.1.1';
 
 /**
  * Two Pi.
@@ -43837,7 +43836,7 @@ function extractUniformsFromString(string) {
 
             if (name.indexOf('[') > -1) {
                 // array!
-                nameSplit = name.split(/\[|\]/);
+                nameSplit = name.split(/\[|]/);
                 name = nameSplit[0];
                 size *= Number(nameSplit[1]);
             }
@@ -56229,7 +56228,7 @@ exports.particles = particles;
 exports.prepare = prepare;
 
 /**
- * A premade instance of the loader that can be used to loader resources.
+ * A premade instance of the loader that can be used to load resources.
  *
  * @name loader
  * @memberof PIXI
@@ -65698,13 +65697,26 @@ var WocViz = function () {
       var _getSize2 = (0, _config.getSize)(),
           wr = _getSize2.wr;
 
-      var maxPerRow = (0, _Maths.round)(wr / (this.maxWidthBlock * 1.5));
-      var rows = [];
-      var addedCols = 0;
-      while (addedCols < this.blocks.length) {
-        var cols = (0, _Maths.roundRandom)(1, maxPerRow);
-        rows.push(cols);
-        addedCols += cols;
+      var flagHasChanged = false;
+      var tempMaxPerRow = (0, _Maths.round)(wr / (this.maxWidthBlock * 1.5));
+      if (!this.maxPerRow) {
+        this.maxPerRow = tempMaxPerRow;
+        flagHasChanged = true;
+      } else {
+        if (this.maxPerRow !== tempMaxPerRow) {
+          flagHasChanged = true;
+          this.maxPerRow = tempMaxPerRow;
+        }
+      }
+
+      if (flagHasChanged) {
+        this.rows = [];
+        var addedCols = 0;
+        while (addedCols < this.blocks.length) {
+          var cols = (0, _Maths.roundRandom)(1, this.maxPerRow);
+          this.rows.push(cols);
+          addedCols += cols;
+        }
       }
 
       var index = 0;
@@ -65715,7 +65727,7 @@ var WocViz = function () {
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (var _iterator2 = this.rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var row = _step2.value;
 
           for (var i = 0; i < row; i++) {

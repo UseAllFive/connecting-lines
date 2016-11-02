@@ -119,19 +119,33 @@ class WocViz {
 
   calculatePositionBlocks() {
     const { wr } = getSize();
-    const maxPerRow = round(wr / (this.maxWidthBlock * 1.5));
-    const rows = [];
-    let addedCols = 0;
-    while(addedCols < this.blocks.length) {
-      const cols = roundRandom(1, maxPerRow);
-      rows.push(cols);
-      addedCols += cols;
+
+    let flagHasChanged = false;
+    const tempMaxPerRow = round(wr / (this.maxWidthBlock * 1.5));
+    if(!this.maxPerRow) {
+      this.maxPerRow = tempMaxPerRow;
+      flagHasChanged = true;
+    } else {
+      if(this.maxPerRow !== tempMaxPerRow) {
+        flagHasChanged = true;
+        this.maxPerRow = tempMaxPerRow;
+      }
+    }
+
+    if(flagHasChanged) {
+      this.rows = [];
+      let addedCols = 0;
+      while(addedCols < this.blocks.length) {
+        const cols = roundRandom(1, this.maxPerRow);
+        this.rows.push(cols);
+        addedCols += cols;
+      }
     }
 
     let index = 0;
     let rowY = 0;
 
-    for (const row of rows) {
+    for (const row of this.rows) {
       for (let i = 0; i < row; i++) {
         if(index >= this.blocks.length ) {
           break;
