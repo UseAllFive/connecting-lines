@@ -4,6 +4,16 @@ export const DEBUG = true;
 
 let SIZE = {};
 let DATA = {};
+let is_mobile = false;
+
+export function setMobile(val) {
+  is_mobile = val;
+}
+
+export function IS_MOBILE() {
+  return is_mobile;
+}
+
 
 export function setData(data) {
   DATA = Object.assign(DATA, data);

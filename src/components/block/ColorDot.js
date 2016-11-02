@@ -1,9 +1,10 @@
 import { Graphics } from 'pixi.js/src';
+import { IS_MOBILE } from '../../utils/config';
 
 export default class ColorDot extends Graphics {
   constructor(data) {
     super();
-    const radius = 3;
+    const radius = IS_MOBILE() ? 1.5 : 3;
     const { color, id/*, value */ } = data;
 
     this.dotType = id;

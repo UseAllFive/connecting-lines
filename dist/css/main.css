@@ -1,5 +1,6 @@
 body {
   font-family: 'SangBleu BP';
+  overflow-x: hidden;
 }
 
 a {

@@ -26,6 +26,8 @@ export default class Renderer {
       }
     }
 
+    instance.plugins.interaction.autoPreventDefault = false;
+
     return instance;
   }
 }

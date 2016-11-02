@@ -7,7 +7,7 @@ import {
 import { groupBy } from 'lodash';
 import perlin from 'perlin-noise';
 
-import { setSize, getSize, DEBUG, setData, getData, setMinHeight } from './utils/config';
+import { setSize, getSize, DEBUG, IS_MOBILE, setMobile, setData, getData, setMinHeight } from './utils/config';
 import { roundRandom, random, round, coin, distance } from './utils/Maths';
 import { loadAssets, loadFonts } from './utils/loader';
 import Renderer from './components/renderer/renderer';
@@ -21,11 +21,13 @@ import Block from './components/block/Block';
 class WocViz {
 
   constructor(props) {
-    const { width, height, autoRender, forceCanvas, canvasContainer, data, showDebug } = props;
+    const { width, height, autoRender, forceCanvas, canvasContainer, data, showDebug, isMobile } = props;
 
     this.autoRender = autoRender || true;
     this.canvasContainer = canvasContainer;
     this.forceCanvas = forceCanvas || false;
+
+    setMobile(isMobile || false);
 
     this.renderer = null;
     this.scene    = null;
@@ -98,9 +100,9 @@ class WocViz {
 
     for (const blockData of blocks) {
       const block = new Block(blockData);
-      this.maxWidthBlock = round(Math.max(this.maxWidthBlock, block.width));
       this.blocks.push(block);
       this.scene.addChild(block);
+      this.maxWidthBlock = round(Math.max(this.maxWidthBlock, block.width));
     }
 
     this.calculatePositionBlocks();
@@ -113,7 +115,7 @@ class WocViz {
     const area = (wr / row);
     return {
       x: area * i + random(area - width),
-      y: random(rowY + random(20, -10), offset.y + rowY)
+      y: random(rowY + random(IS_MOBILE() ? 5 : 20, IS_MOBILE() ? -4 : -10), offset.y + rowY)
     };
   }
 
@@ -121,7 +123,7 @@ class WocViz {
     const { wr } = getSize();
 
     let flagHasChanged = false;
-    const tempMaxPerRow = round(wr / (this.maxWidthBlock * 1.5));
+    const tempMaxPerRow = round(wr / (this.maxWidthBlock * (IS_MOBILE() ? .9 : 1.5)));
     if(!this.maxPerRow) {
       this.maxPerRow = tempMaxPerRow;
       flagHasChanged = true;
@@ -157,7 +159,7 @@ class WocViz {
         block.y = point.y;
         index++;
       }
-      rowY += 180;
+      rowY += IS_MOBILE() ? 90 : 180;
     }
 
     this.generateLines();

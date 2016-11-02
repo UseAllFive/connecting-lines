@@ -65565,11 +65565,14 @@ var WocViz = function () {
         forceCanvas = props.forceCanvas,
         canvasContainer = props.canvasContainer,
         data = props.data,
-        showDebug = props.showDebug;
+        showDebug = props.showDebug,
+        isMobile = props.isMobile;
 
     this.autoRender = autoRender || true;
     this.canvasContainer = canvasContainer;
     this.forceCanvas = forceCanvas || false;
+
+    (0, _config.setMobile)(isMobile || false);
 
     this.renderer = null;
     this.scene = null;
@@ -65656,9 +65659,9 @@ var WocViz = function () {
           var blockData = _step.value;
 
           var block = new _Block2.default(blockData);
-          this.maxWidthBlock = (0, _Maths.round)(Math.max(this.maxWidthBlock, block.width));
           this.blocks.push(block);
           this.scene.addChild(block);
+          this.maxWidthBlock = (0, _Maths.round)(Math.max(this.maxWidthBlock, block.width));
         }
       } catch (err) {
         _didIteratorError = true;
@@ -65688,7 +65691,7 @@ var WocViz = function () {
       var area = wr / row;
       return {
         x: area * i + (0, _Maths.random)(area - width),
-        y: (0, _Maths.random)(rowY + (0, _Maths.random)(20, -10), offset.y + rowY)
+        y: (0, _Maths.random)(rowY + (0, _Maths.random)((0, _config.IS_MOBILE)() ? 5 : 20, (0, _config.IS_MOBILE)() ? -4 : -10), offset.y + rowY)
       };
     }
   }, {
@@ -65698,7 +65701,7 @@ var WocViz = function () {
           wr = _getSize2.wr;
 
       var flagHasChanged = false;
-      var tempMaxPerRow = (0, _Maths.round)(wr / (this.maxWidthBlock * 1.5));
+      var tempMaxPerRow = (0, _Maths.round)(wr / (this.maxWidthBlock * ((0, _config.IS_MOBILE)() ? .9 : 1.5)));
       if (!this.maxPerRow) {
         this.maxPerRow = tempMaxPerRow;
         flagHasChanged = true;
@@ -65741,7 +65744,7 @@ var WocViz = function () {
             block.y = point.y;
             index++;
           }
-          rowY += 180;
+          rowY += (0, _config.IS_MOBILE)() ? 90 : 180;
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -66236,7 +66239,7 @@ var Block = function (_Container) {
       var addedImages = 0;
       var lastWidth = 0;
       var lastHeight = 0;
-      var offset = 20;
+      var offset = (0, _config.IS_MOBILE)() ? 5 : 20;
 
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
@@ -66251,7 +66254,7 @@ var Block = function (_Container) {
           var scale = isPortrait ? MAX_HEIGHT / texture.height : MAX_WIDTH / texture.width;
 
           var sprite = new _src.Sprite(texture);
-          sprite.scale.set(scale);
+          sprite.scale.set((0, _config.IS_MOBILE)() ? scale / 2 : scale);
 
           lastWidth = sprite.width;
           lastHeight = sprite.height;
@@ -66260,18 +66263,18 @@ var Block = function (_Container) {
 
           switch (addedImages) {
             case 0:
-              pos.x = (0, _Maths.random)(0, 20);
-              pos.y = (0, _Maths.random)(0, 20);
+              pos.x = (0, _Maths.random)(0, offset);
+              pos.y = (0, _Maths.random)(0, offset);
               break;
 
             case 1:
-              pos.x = lastWidth + offset + (0, _Maths.random)(0, 20);
-              pos.y = offset + (0, _Maths.random)(0, 20);
+              pos.x = lastWidth + offset + (0, _Maths.random)(0, offset);
+              pos.y = offset + (0, _Maths.random)(0, offset);
               break;
 
             case 2:
-              pos.x = offset + (0, _Maths.random)(0, 20);
-              pos.y = lastHeight + offset + (0, _Maths.random)(0, 20);
+              pos.x = offset + (0, _Maths.random)(0, offset);
+              pos.y = lastHeight + offset + (0, _Maths.random)(0, offset);
               break;
           }
 
@@ -66301,14 +66304,14 @@ var Block = function (_Container) {
     key: 'addLinks',
     value: function addLinks(links) {
       this.linksContainer = new _src.Container();
-      this.linksContainer.position.y = 2;
+      this.linksContainer.position.y = (0, _config.IS_MOBILE)() ? 0 : 2;
       this.dots = [];
 
       var types = data.types;
 
       var row = -1;
       var col = 0;
-      var offset = 7;
+      var offset = (0, _config.IS_MOBILE)() ? 3.5 : 7;
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
@@ -66352,15 +66355,15 @@ var Block = function (_Container) {
     value: function addInformation(title, info, linkCopy) {
       var offset = 2;
 
-      this.title = new _src.Text(title, _styles.styleTitle);
+      this.title = new _src.Text(title, (0, _config.IS_MOBILE)() ? _styles.styleTitleMobile : _styles.styleTitle);
       this.title.resolution = window.devicePixelRatio;
-      this.title.position.x = 15;
+      this.title.position.x = (0, _config.IS_MOBILE)() ? 7 : 15;
       this.addChild(this.title);
 
       this.info = new _src.Text(info, _styles.styleInfo);
       this.info.resolution = window.devicePixelRatio;
       this.info.alpha = 0;
-      this.info.position.x = 15;
+      this.info.position.x = (0, _config.IS_MOBILE)() ? 7 : 15;
       this.info.position.y = this.title.height + offset;
       this.info.__startPos = this.info.position.x;
       this.addChild(this.info);
@@ -66368,7 +66371,7 @@ var Block = function (_Container) {
       this.link = new _src.Text(linkCopy.toUpperCase(), _styles.styleLink);
       this.link.resolution = window.devicePixelRatio;
       this.link.alpha = 0;
-      this.link.position.x = 15;
+      this.link.position.x = (0, _config.IS_MOBILE)() ? 7 : 15;
       this.link.position.y = this.info.position.y + this.info.height + offset + 3;
       this.link.__startPos = this.link.position.x;
       this.addChild(this.link);
@@ -66413,6 +66416,8 @@ var _createClass = function () {
 
 var _src = require('pixi.js/src');
 
+var _config = require('../../utils/config');
+
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -66439,7 +66444,7 @@ var ColorDot = function (_Graphics) {
 
     var _this = _possibleConstructorReturn(this, (ColorDot.__proto__ || Object.getPrototypeOf(ColorDot)).call(this));
 
-    var radius = 3;
+    var radius = (0, _config.IS_MOBILE)() ? 1.5 : 3;
     var color = data.color,
         id = data.id;
 
@@ -66466,7 +66471,7 @@ var ColorDot = function (_Graphics) {
 
 exports.default = ColorDot;
 
-},{"pixi.js/src":136}],185:[function(require,module,exports){
+},{"../../utils/config":190,"pixi.js/src":136}],185:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -66478,6 +66483,10 @@ var styleTitle = exports.styleTitle = {
   fill: 0x000000,
   align: 'left'
 };
+
+var styleTitleMobile = exports.styleTitleMobile = Object.assign(styleTitle, {
+  fontSize: 9
+});
 
 var styleInfo = exports.styleInfo = {
   fontFamily: 'GT Sectra Trial',
@@ -66533,6 +66542,8 @@ var Renderer = function Renderer(forceCanvas) {
       instance = (0, _src.autoDetectRenderer)(w, h, options);
     }
   }
+
+  instance.plugins.interaction.autoPreventDefault = false;
 
   return instance;
 };
@@ -66680,6 +66691,7 @@ function _interopRequireDefault(obj) {
  * @param {object} canvasContainer where to add the canvas dom element
  * @param {boolean} showDebug show debug UI
  * @param {boolean} forceCanvas whether to use the Canvas renderer instead of letting the system set whether to use WebGL or Canvas
+ * @param {boolean} isMobile detect and pass if the component is rendered on mobile
  */
 var app = new _WocViz2.default({
   data: _data.data,
@@ -66688,7 +66700,8 @@ var app = new _WocViz2.default({
   autoRender: true,
   canvasContainer: document.body,
   showDebug: false,
-  forceCanvas: false
+  forceCanvas: false,
+  isMobile: true
 });
 
 /**
@@ -66756,6 +66769,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DEBUG = undefined;
+exports.setMobile = setMobile;
+exports.IS_MOBILE = IS_MOBILE;
 exports.setData = setData;
 exports.getData = getData;
 exports.setSize = setSize;
@@ -66768,6 +66783,15 @@ var DEBUG = exports.DEBUG = true;
 
 var SIZE = {};
 var DATA = {};
+var is_mobile = false;
+
+function setMobile(val) {
+  is_mobile = val;
+}
+
+function IS_MOBILE() {
+  return is_mobile;
+}
 
 function setData(data) {
   DATA = Object.assign(DATA, data);
