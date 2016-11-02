@@ -65701,7 +65701,7 @@ var WocViz = function () {
           wr = _getSize2.wr;
 
       var flagHasChanged = false;
-      var tempMaxPerRow = (0, _Maths.round)(wr / (this.maxWidthBlock * ((0, _config.IS_MOBILE)() ? .9 : 1.5)));
+      var tempMaxPerRow = (0, _Maths.round)(wr / (this.maxWidthBlock * ((0, _config.IS_MOBILE)() ? 1 : 1.5)));
       if (!this.maxPerRow) {
         this.maxPerRow = tempMaxPerRow;
         flagHasChanged = true;
@@ -65738,7 +65738,7 @@ var WocViz = function () {
               break;
             }
             var block = this.blocks[index];
-            var offset = { x: 0, y: rowY === 0 ? 20 : 0 };
+            var offset = { x: 5, y: rowY === 0 ? 20 : 0 };
             var point = this.calculatePoint(block.width, rowY, offset, row, i);
             block.x = point.x;
             block.y = point.y;

@@ -123,7 +123,7 @@ class WocViz {
     const { wr } = getSize();
 
     let flagHasChanged = false;
-    const tempMaxPerRow = round(wr / (this.maxWidthBlock * (IS_MOBILE() ? .9 : 1.5)));
+    const tempMaxPerRow = round(wr / (this.maxWidthBlock * (IS_MOBILE() ? 1 : 1.5)));
     if(!this.maxPerRow) {
       this.maxPerRow = tempMaxPerRow;
       flagHasChanged = true;
@@ -153,7 +153,7 @@ class WocViz {
           break;
         }
         const block = this.blocks[index];
-        const offset = {x: 0, y: rowY === 0 ? 20 : 0};
+        const offset = {x: 5, y: rowY === 0 ? 20 : 0};
         const point = this.calculatePoint(block.width, rowY, offset, row, i);
         block.x = point.x;
         block.y = point.y;
