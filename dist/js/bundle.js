@@ -66484,9 +66484,12 @@ var styleTitle = exports.styleTitle = {
   align: 'left'
 };
 
-var styleTitleMobile = exports.styleTitleMobile = Object.assign(styleTitle, {
-  fontSize: 9
-});
+var styleTitleMobile = exports.styleTitleMobile = {
+  fontFamily: 'SangBleu BP',
+  fontSize: 9,
+  fill: 0x000000,
+  align: 'left'
+};
 
 var styleInfo = exports.styleInfo = {
   fontFamily: 'GT Sectra Trial',
@@ -66701,7 +66704,7 @@ var app = new _WocViz2.default({
   canvasContainer: document.body,
   showDebug: false,
   forceCanvas: false,
-  isMobile: true
+  isMobile: false
 });
 
 /**

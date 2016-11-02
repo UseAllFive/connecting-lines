@@ -5,9 +5,12 @@ export const styleTitle = {
   align: 'left'
 }
 
-export const styleTitleMobile = Object.assign(styleTitle, {
+export const styleTitleMobile = {
+  fontFamily: 'SangBleu BP',
   fontSize: 9,
-});
+  fill: 0x000000,
+  align: 'left'
+};
 
 export const styleInfo = {
   fontFamily: 'GT Sectra Trial',
