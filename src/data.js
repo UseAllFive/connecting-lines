@@ -1,4 +1,4 @@
-const assetsFolder = '/static/images/';
+const assetsFolder = 'static/images/';
 
 export const data = {
   assetsFolder,
