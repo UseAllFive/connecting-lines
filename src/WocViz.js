@@ -13,6 +13,16 @@ import { loadAssets, loadFonts } from './utils/loader';
 import Renderer from './components/renderer/renderer';
 import Block from './components/block/Block';
 
+const GUI_PARAMS = function() {
+  this.lineSegments = 150;
+  this.noisePowerMin = 2.5;
+  this.noisePowerMax = 4;
+  this.strokeWidth = 0.5;
+  this.sketch = false;
+}
+
+const guiParams = new GUI_PARAMS();
+
 /**
  * @class WocViz
  * @constructor
@@ -63,7 +73,7 @@ class WocViz {
     this.createRender();
     this.addObjects();
 
-    if(this.showDebug) {
+    if(DEBUG) {
       this.startStats();
       this.startGUI();
     }
@@ -171,6 +181,7 @@ class WocViz {
   generateLines() {
     if(this.containerLines) {
       this.containerLines.destroy(true);
+      this.scene.removeChild(this.containerLines);
       this.containerLines = null;
     }
 
@@ -202,10 +213,10 @@ class WocViz {
           // option 3
           // line.lineStyle(.5, dot.color);
 
-          const dist = round(distance(prevPoint, {x, y}) / 10 );
-          const steps = dist;
+          // const dist = round(distance(prevPoint, {x, y}) / 10 );
+          const steps = guiParams.lineSegments;
           const noise = perlin.generatePerlinNoise(1, steps);
-          const power = random(2.5, 4);
+          const power = random(guiParams.noisePowerMin, guiParams.noisePowerMax);
           let j = 0;
           for (const point of this.linearInterpolation(prevPoint, {x, y}, steps)) {
 
@@ -219,12 +230,12 @@ class WocViz {
               const yy = point.y + noise[j] * power;
 
               // option 2
-              // const dist = distance({x: xx, y: yy}, prevPoint);
-              // line.lineStyle(1/ dist / 2, dot.color);
+              const dist = distance({x: xx, y: yy}, prevPoint);
+              line.lineStyle(guiParams.strokeWidth + 1/ dist / 2, dot.color);
 
               // option 2
-              const dist = distance({x: xx, y: yy}, prevPoint);
-              line.lineStyle(10/dist, dot.color);
+              // const dist = distance({x: xx, y: yy}, prevPoint);
+              // line.lineStyle(guiParams.strokeWidth + 10/dist, dot.color);
               //
 
               //
@@ -237,7 +248,12 @@ class WocViz {
 
               line.lineTo(xx, yy);
               // option 2
-              line.moveTo(xx + .15, yy + .15);
+              if(guiParams.sketch) {
+                line.moveTo(point.x, point.y);
+              } else {
+                line.moveTo(xx, yy);
+              }
+
               prevPoint = {x: xx, y: yy};
             }
             j++;
@@ -271,6 +287,12 @@ class WocViz {
   startGUI() {
     this.gui = new dat.GUI()
     this.gui.domElement.style.display = DEBUG ? 'block' : 'none';
+
+    this.gui.add(guiParams, 'lineSegments', 10, 300).step(1).onChange(this.generateLines.bind(this));
+    this.gui.add(guiParams, 'noisePowerMin', 1, 25).onChange(this.generateLines.bind(this));
+    this.gui.add(guiParams, 'noisePowerMax', 1, 25).onChange(this.generateLines.bind(this));
+    this.gui.add(guiParams, 'strokeWidth', 0.1, 5).onChange(this.generateLines.bind(this));
+    this.gui.add(guiParams, 'sketch').onChange(this.generateLines.bind(this));
 
     // let cameraFolder = this.gui.addFolder('Camera');
     // cameraFolder.add(this.camera.position, 'x', -400, 400);

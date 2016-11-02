@@ -65548,11 +65548,22 @@ function _classCallCheck(instance, Constructor) {
   }
 }
 
+var GUI_PARAMS = function GUI_PARAMS() {
+  this.lineSegments = 150;
+  this.noisePowerMin = 2.5;
+  this.noisePowerMax = 4;
+  this.strokeWidth = 0.5;
+  this.sketch = false;
+};
+
+var guiParams = new GUI_PARAMS();
+
 /**
  * @class WocViz
  * @constructor
  * @see index.js for params description
  */
+
 var WocViz = function () {
   function WocViz(props) {
     var _this = this;
@@ -65611,7 +65622,7 @@ var WocViz = function () {
       this.createRender();
       this.addObjects();
 
-      if (this.showDebug) {
+      if (_config.DEBUG) {
         this.startStats();
         this.startGUI();
       }
@@ -65771,6 +65782,7 @@ var WocViz = function () {
     value: function generateLines() {
       if (this.containerLines) {
         this.containerLines.destroy(true);
+        this.scene.removeChild(this.containerLines);
         this.containerLines = null;
       }
 
@@ -65842,10 +65854,10 @@ var WocViz = function () {
                 // option 3
                 // line.lineStyle(.5, dot.color);
 
-                var dist = (0, _Maths.round)((0, _Maths.distance)(prevPoint, { x: x, y: y }) / 10);
-                var steps = dist;
+                // const dist = round(distance(prevPoint, {x, y}) / 10 );
+                var steps = guiParams.lineSegments;
                 var noise = _perlinNoise2.default.generatePerlinNoise(1, steps);
-                var power = (0, _Maths.random)(2.5, 4);
+                var power = (0, _Maths.random)(guiParams.noisePowerMin, guiParams.noisePowerMax);
                 var j = 0;
                 var _iteratorNormalCompletion6 = true;
                 var _didIteratorError6 = false;
@@ -65865,12 +65877,12 @@ var WocViz = function () {
                       var yy = point.y + noise[j] * power;
 
                       // option 2
-                      // const dist = distance({x: xx, y: yy}, prevPoint);
-                      // line.lineStyle(1/ dist / 2, dot.color);
+                      var dist = (0, _Maths.distance)({ x: xx, y: yy }, prevPoint);
+                      line.lineStyle(guiParams.strokeWidth + 1 / dist / 2, dot.color);
 
                       // option 2
-                      var _dist = (0, _Maths.distance)({ x: xx, y: yy }, prevPoint);
-                      line.lineStyle(10 / _dist, dot.color);
+                      // const dist = distance({x: xx, y: yy}, prevPoint);
+                      // line.lineStyle(guiParams.strokeWidth + 10/dist, dot.color);
                       //
 
                       //
@@ -65883,7 +65895,12 @@ var WocViz = function () {
 
                       line.lineTo(xx, yy);
                       // option 2
-                      line.moveTo(xx + .15, yy + .15);
+                      if (guiParams.sketch) {
+                        line.moveTo(point.x, point.y);
+                      } else {
+                        line.moveTo(xx, yy);
+                      }
+
                       prevPoint = { x: xx, y: yy };
                     }
                     j++;
@@ -65961,6 +65978,12 @@ var WocViz = function () {
     value: function startGUI() {
       this.gui = new _datGui2.default.GUI();
       this.gui.domElement.style.display = _config.DEBUG ? 'block' : 'none';
+
+      this.gui.add(guiParams, 'lineSegments', 10, 300).step(1).onChange(this.generateLines.bind(this));
+      this.gui.add(guiParams, 'noisePowerMin', 1, 25).onChange(this.generateLines.bind(this));
+      this.gui.add(guiParams, 'noisePowerMax', 1, 25).onChange(this.generateLines.bind(this));
+      this.gui.add(guiParams, 'strokeWidth', 0.1, 5).onChange(this.generateLines.bind(this));
+      this.gui.add(guiParams, 'sketch').onChange(this.generateLines.bind(this));
 
       // let cameraFolder = this.gui.addFolder('Camera');
       // cameraFolder.add(this.camera.position, 'x', -400, 400);
@@ -66693,7 +66716,7 @@ function _interopRequireDefault(obj) {
  * @param {boolean} autoRender whether or not to use internal loop to render the scene
  * @param {object} canvasContainer where to add the canvas dom element
  * @param {boolean} showDebug show debug UI
- * @param {boolean} forceCanvas whether to use the Canvas renderer instead of letting the system set whether to use WebGL or Canvas
+ * @param {boolean} forceCanvas force the 2d Context over letting the system decide whether to use WebGL or not
  * @param {boolean} isMobile detect and pass if the component is rendered on mobile
  */
 var app = new _WocViz2.default({

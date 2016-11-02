@@ -14,7 +14,7 @@ import { data } from './data.js';
  * @param {boolean} autoRender whether or not to use internal loop to render the scene
  * @param {object} canvasContainer where to add the canvas dom element
  * @param {boolean} showDebug show debug UI
- * @param {boolean} forceCanvas whether to use the Canvas renderer instead of letting the system set whether to use WebGL or Canvas
+ * @param {boolean} forceCanvas force the 2d Context over letting the system decide whether to use WebGL or not
  * @param {boolean} isMobile detect and pass if the component is rendered on mobile
  */
 const app = new WocViz({
