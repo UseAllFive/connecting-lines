@@ -50,7 +50,7 @@ export const Enum = {
   CLIP_MIRROR: 'mirror',
 
   /* Constants for control over the cubic interpolation tension */
-  CUBIC_TENSION_DEFAULT: 5,
+  CUBIC_TENSION_DEFAULT: 0,
   CUBIC_TENSION_CATMULL_ROM: 0
 };
 

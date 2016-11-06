@@ -24,10 +24,9 @@ const distanceArrayPoint = (a,b) => Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.po
 export const addCurveSegment = (context, i, points) => {
   let averageLineLength, du, end, j, k, pieceCount, pieceLength, ref, ref1, ref2, ref3, start, t, u;
   const s = new Smooth(points, {
-    method: 'sinc',
+    method: 'cubic',
   	clip: 'clamp',
-  	lanczosFilterSize: 2,
-  	cubicTension: 0
+  	cubicFilterSize: 10,
   });
 
   averageLineLength = 1;

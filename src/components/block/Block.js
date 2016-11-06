@@ -14,7 +14,11 @@ export default class Block extends Container {
   /**
    * @constructor
    * @param title
-   * @param radius
+   * @param links
+   * @param images
+   * @param body
+   * @param link
+   * @param url
    */
   constructor(props) {
     super();
@@ -22,6 +26,8 @@ export default class Block extends Container {
     const { title, links, images, body, link, url } = props;
 
     this.linkURL = url;
+    this.blockTitle = title;
+    this.links = links;
 
     this.hitTest = new Graphics();
     this.addChild(this.hitTest);
@@ -41,7 +47,7 @@ export default class Block extends Container {
   addEvents() {
     this.buttonMode = true;
     this.interactive = true;
-    const events = ['tap', 'click', 'mouseover', 'mouseout'];
+    const events = ['mouseover', 'mouseout'];
     for (const event of events) {
       this.on(event, this.eventHandler.bind(this));
     }
@@ -51,10 +57,12 @@ export default class Block extends Container {
     switch(event.type) {
       case 'tap':
       case 'click':
+        // this.emit('click', {title: this.blockTitle});
         window.open(this.linkURL);
         break;
 
       case 'mouseover':
+        this.emit('over', {title: this.blockTitle});
         TweenMax.to(this.imageContainer, .5, {alpha: .35, overwrite: 'all'});
         TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10, overwrite: 'all'});
         TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1, overwrite: 'all'});
@@ -62,6 +70,7 @@ export default class Block extends Container {
         break;
 
       case 'mouseout':
+        this.emit('out', {title: this.blockTitle});
         TweenMax.to(this.imageContainer, .5, {alpha: .5, overwrite: 'all'});
         TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1, overwrite: 'all'});
         TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos, overwrite: 'all'});
@@ -136,8 +145,12 @@ export default class Block extends Container {
     let col = 0;
     const offset = IS_MOBILE() ? 3.5 : 7;
     for (const link of links) {
-      const dot = new ColorDot(types[link]);
+      const dot = new ColorDot(link, types[link]);
+      dot.blockTitle = this.blockTitle;
       dot.position.x = ( col % 2 ) * offset;
+      dot.on('clickDot', (event) => {
+        this.emit('clickDot', event);
+      })
 
       if(col % 2 === 0 ) row++;
 
@@ -175,6 +188,13 @@ export default class Block extends Container {
     this.link.position.y = this.info.position.y + this.info.height + offset + 3;
     this.link.__startPos = this.link.position.x;
     this.addChild(this.link);
+
+    this.link.buttonMode = true;
+    this.link.interactive = true;
+    const events = ['tap', 'click'];
+    for (const event of events) {
+      this.link.on(event, this.eventHandler.bind(this));
+    }
 
     this.arrow = new Arrow();
     this.arrow.alpha = 0;

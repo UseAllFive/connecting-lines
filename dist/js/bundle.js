@@ -31745,7 +31745,7 @@ var EMPTY_ARRAY_BUFFER = new ArrayBuffer(0);
  * Helper class to create a webGL buffer
  *
  * @class
- * @memberof pixi.gl
+ * @memberof PIXI.glCore
  * @param gl {WebGLRenderingContext} The current WebGL rendering context
  * @param type {gl.ARRAY_BUFFER | gl.ELEMENT_ARRAY_BUFFER} @mat
  * @param data {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} an array of data
@@ -31766,7 +31766,7 @@ var Buffer = function(gl, type, data, drawType)
      *
      * @member {WebGLBuffer}
      */
-	this.buffer = gl.createBuffer();
+	this.buffer = gl.createBuffer(); 
 
 	/**
      * The type of the buffer
@@ -31844,7 +31844,7 @@ Buffer.createIndexBuffer = function(gl, data, drawType)
 
 Buffer.create = function(gl, type, data, drawType)
 {
-	return new Buffer(gl, type, drawType);
+	return new Buffer(gl, type, data, drawType);
 };
 
 /**
@@ -31865,7 +31865,7 @@ var Texture = require('./GLTexture');
  * Helper class to create a webGL Framebuffer
  *
  * @class
- * @memberof pixi.gl
+ * @memberof PIXI.glCore
  * @param gl {WebGLRenderingContext} The current WebGL rendering context
  * @param width {Number} the width of the drawing area of the frame buffer
  * @param height {Number} the height of the drawing area of the frame buffer
@@ -31896,7 +31896,7 @@ var Framebuffer = function(gl, width, height)
     /**
      * The stencil buffer
      *
-     * @member {GLTexture}
+     * @member {PIXI.glCore.GLTexture}
      */
     this.texture = null;
 
@@ -31916,7 +31916,7 @@ var Framebuffer = function(gl, width, height)
 
 /**
  * Adds a texture to the frame buffer
- * @param texture {GLTexture}
+ * @param texture {PIXI.glCore.GLTexture}
  */
 Framebuffer.prototype.enableTexture = function(texture)
 {
@@ -31974,12 +31974,6 @@ Framebuffer.prototype.clear = function( r, g, b, a )
 Framebuffer.prototype.bind = function()
 {
     var gl = this.gl;
-
-    if(this.texture)
-    {
-        this.texture.unbind();
-    }
-
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer );
 };
 
@@ -31989,7 +31983,7 @@ Framebuffer.prototype.bind = function()
 Framebuffer.prototype.unbind = function()
 {
     var gl = this.gl;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null );  
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null );
 };
 /**
  * Resizes the drawing area of the buffer to the given width and height
@@ -32045,7 +32039,7 @@ Framebuffer.prototype.destroy = function()
  * @param height {Number} the height of the drawing area of the frame buffer
  * @param data {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} an array of data
  */
-Framebuffer.createRGBA = function(gl, width, height/*, data*/)
+Framebuffer.createRGBA = function(gl, width, height, data)
 {
     var texture = Texture.fromData(gl, null, width, height);
     texture.enableNearestScaling();
@@ -32097,7 +32091,7 @@ var compileProgram = require('./shader/compileProgram'),
  * Helper class to create a webGL Shader
  *
  * @class
- * @memberof pixi.gl
+ * @memberof PIXI.glCore
  * @param gl {WebGLRenderingContext}
  * @param vertexSrc {string|string[]} The vertex shader source as an array of strings.
  * @param fragmentSrc {string|string[]} The fragment shader source as an array of strings.
@@ -32170,7 +32164,7 @@ module.exports = Shader;
  * Helper class to create a WebGL Texture
  *
  * @class
- * @memberof pixi.gl
+ * @memberof PIXI.glCore
  * @param gl {WebGLRenderingContext} The current WebGL context
  * @param width {number} the width of the texture
  * @param height {number} the height of the texture
@@ -32215,13 +32209,13 @@ var Texture = function(gl, width, height, format, type)
 	 *
 	 * @member {Number}
 	 */
-	this.width = width || 0;
+	this.width = width || -1;
 	/**
 	 * The height of texture
 	 *
 	 * @member {Number}
 	 */
-	this.height = height || 0;
+	this.height = height || -1;
 
 	/**
 	 * The pixel format of the texture. defaults to gl.RGBA
@@ -32250,12 +32244,25 @@ Texture.prototype.upload = function(source)
 
 	var gl = this.gl;
 
-	// if the source is a video, we need to use the videoWidth / videoHeight properties as width / height will be incorrect.
-	this.width = source.videoWidth || source.width;
-	this.height = source.videoHeight || source.height;
 
 	gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premultiplyAlpha);
-    gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, source);
+
+	var newWidth = source.videoWidth || source.width;
+	var newHeight = source.videoHeight || source.height;
+
+	if(newHeight !== this.height || newWidth !== this.width)
+	{
+    	gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, source);
+	}
+	else
+	{
+    	gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.format, this.type, source);
+	}
+
+	// if the source is a video, we need to use the videoWidth / videoHeight properties as width / height will be incorrect.
+	this.width = newWidth;
+	this.height = newHeight;
+
 };
 
 var FLOATING_POINT_AVAILABLE = false;
@@ -32272,8 +32279,6 @@ Texture.prototype.uploadData = function(data, width, height)
 
 	var gl = this.gl;
 
-	this.width = width || this.width;
-	this.height = height || this.height;
 
 	if(data instanceof Float32Array)
 	{
@@ -32299,17 +32304,29 @@ Texture.prototype.uploadData = function(data, width, height)
 		this.type = gl.UNSIGNED_BYTE;
 	}
 
-	
-
 	// what type of data?
 	gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premultiplyAlpha);
-	gl.texImage2D(gl.TEXTURE_2D, 0, this.format,  this.width, this.height, 0, this.format, this.type, data || null);
 
+
+	if(width !== this.width || height !== this.height)
+	{
+		gl.texImage2D(gl.TEXTURE_2D, 0, this.format,  width, height, 0, this.format, this.type, data || null);
+	}
+	else
+	{
+		gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, this.format, this.type, data || null);
+	}
+
+	this.width = width;
+	this.height = height;
+
+
+//	texSubImage2D
 };
 
 /**
  * Binds the texture
- * @param  location 
+ * @param  location
  */
 Texture.prototype.bind = function(location)
 {
@@ -32486,7 +32503,7 @@ var setVertexAttribArrays = require( './setVertexAttribArrays' );
  * Only works if WebGL extensions are enabled (they usually are)
  *
  * @class
- * @memberof pixi.gl
+ * @memberof PIXI.glCore
  * @param gl {WebGLRenderingContext} The current WebGL rendering context
  */
 function VertexArrayObject(gl, state)
@@ -32530,7 +32547,7 @@ function VertexArrayObject(gl, state)
     this.attributes = [];
 
     /**
-     * @member {Array}
+     * @member {PIXI.glCore.GLBuffer}
      */
     this.indexBuffer = null;
 
@@ -32633,7 +32650,7 @@ VertexArrayObject.prototype.activate = function()
 
 /**
  *
- * @param buffer     {WebGLBuffer}
+ * @param buffer     {PIXI.gl.GLBuffer}
  * @param attribute  {*}
  * @param type       {String}
  * @param normalized {Boolean}
@@ -32660,8 +32677,7 @@ VertexArrayObject.prototype.addAttribute = function(buffer, attribute, type, nor
 
 /**
  *
- * @param buffer   {WebGLBuffer}
- * @param options  {Object}
+ * @param buffer   {PIXI.gl.GLBuffer}
  */
 VertexArrayObject.prototype.addIndex = function(buffer/*, options*/)
 {
@@ -32731,7 +32747,7 @@ VertexArrayObject.prototype.destroy = function()
  * Helper class to create a webGL Context
  *
  * @class
- * @memberof pixi.gl
+ * @memberof PIXI.glCore
  * @param canvas {HTMLCanvasElement} the canvas element that we will get the context from
  * @param options {Object} An options object that gets passed in to the canvas element containing the context attributes,
  *                         see https://developer.mozilla.org/en/docs/Web/API/HTMLCanvasElement/getContext for the options available
@@ -32776,8 +32792,10 @@ if (typeof module !== 'undefined' && module.exports)
 if (typeof window !== 'undefined')
 {
     // add the window object
-    window.pixi = { gl: gl };
+    window.PIXI = window.PIXI || {};
+    window.PIXI.glCore = gl;
 }
+
 },{"./GLBuffer":14,"./GLFramebuffer":15,"./GLShader":16,"./GLTexture":17,"./VertexArrayObject":18,"./createContext":19,"./setVertexAttribArrays":21,"./shader":27}],21:[function(require,module,exports){
 // var GL_MAP = {};
 
@@ -32839,7 +32857,7 @@ module.exports = setVertexAttribArrays;
 
 /**
  * @class
- * @memberof pixi.gl.shader
+ * @memberof PIXI.glCore.shader
  * @param gl {WebGLRenderingContext} The current WebGL context {WebGLProgram}
  * @param vertexSrc {string|string[]} The vertex shader source as an array of strings.
  * @param fragmentSrc {string|string[]} The fragment shader source as an array of strings.
@@ -32908,7 +32926,7 @@ module.exports = compileProgram;
 },{}],23:[function(require,module,exports){
 /**
  * @class
- * @memberof pixi.gl.shader
+ * @memberof PIXI.glCore.shader
  * @param type {String} Type of value
  * @param size {Number}
  */
@@ -32993,7 +33011,7 @@ var mapSize = require('./mapSize');
 /**
  * Extracts the attributes
  * @class
- * @memberof pixi.gl.shader
+ * @memberof PIXI.glCore.shader
  * @param gl {WebGLRenderingContext} The current WebGL rendering context
  * @param program {WebGLProgram} The shader program to get the attributes from
  * @return attributes {Object}
@@ -33035,7 +33053,7 @@ var defaultValue = require('./defaultValue');
 /**
  * Extracts the uniforms
  * @class
- * @memberof pixi.gl.shader
+ * @memberof PIXI.glCore.shader
  * @param gl {WebGLRenderingContext} The current WebGL rendering context
  * @param program {WebGLProgram} The shader program to get the uniforms from
  * @return uniforms {Object}
@@ -33069,7 +33087,7 @@ module.exports = extractUniforms;
 /**
  * Extracts the attributes
  * @class
- * @memberof pixi.gl.shader
+ * @memberof PIXI.glCore.shader
  * @param gl {WebGLRenderingContext} The current WebGL rendering context
  * @param uniforms {Array} @mat ?
  * @return attributes {Object}
@@ -33220,7 +33238,7 @@ module.exports = {
 },{"./compileProgram":22,"./defaultValue":23,"./extractAttributes":24,"./extractUniforms":25,"./generateUniformAccessObject":26,"./mapSize":28,"./mapType":29}],28:[function(require,module,exports){
 /**
  * @class
- * @memberof pixi.gl.shader
+ * @memberof PIXI.glCore.shader
  * @param type {String}
  * @return {Number}
  */
@@ -65431,7 +65449,6 @@ var _createClass = function () {
     if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
   };
 }();
-// import perlin from 'perlin-noise';
 
 var _datGui = require('dat-gui');
 
@@ -65448,6 +65465,8 @@ var _fastclick2 = _interopRequireDefault(_fastclick);
 var _src = require('pixi.js/src');
 
 var _lodash = require('lodash');
+
+var _gsap = require('gsap');
 
 var _config = require('./utils/config');
 
@@ -65595,6 +65614,8 @@ var WocViz = function () {
           var blockData = _step.value;
 
           var block = new _Block2.default(blockData);
+          block.on('over', this.onBlockOver.bind(this));
+          block.on('clickDot', this.onDotClick.bind(this));
           this.blocks.push(block);
           this.scene.addChild(block);
           this.maxWidthBlock = (0, _Maths.round)(Math.max(this.maxWidthBlock, block.width));
@@ -65615,6 +65636,18 @@ var WocViz = function () {
       }
 
       this.calculatePositionBlocks();
+      (0, _config.setMinHeight)(this.scene.height + 75);
+      this.resizeRenderer();
+    }
+  }, {
+    key: 'onBlockOver',
+    value: function onBlockOver(event) {
+      this.generateLines(event.title);
+    }
+  }, {
+    key: 'onDotClick',
+    value: function onDotClick(event) {
+      this.generateLines(null, event.indexType);
     }
   }, {
     key: 'calculatePoint',
@@ -65674,7 +65707,7 @@ var WocViz = function () {
               break;
             }
             var block = this.blocks[index];
-            var offset = { x: 5, y: rowY === 0 ? 20 : 0 };
+            var offset = { x: 5, y: rowY === 0 ? 30 : 0 };
             var point = this.calculatePoint(block.width, rowY, offset, row, i);
             block.x = point.x;
             block.y = point.y;
@@ -65682,6 +65715,8 @@ var WocViz = function () {
           }
           rowY += (0, _config.IS_MOBILE)() ? 90 : 180;
         }
+
+        // this.generateLines();
       } catch (err) {
         _didIteratorError2 = true;
         _iteratorError2 = err;
@@ -65696,15 +65731,22 @@ var WocViz = function () {
           }
         }
       }
-
-      this.generateLines();
-
-      (0, _config.setMinHeight)(this.scene.height + 75);
-      this.resizeRenderer();
+    }
+  }, {
+    key: 'showLine',
+    value: function showLine(block) {
+      this.generateLines(block);
+    }
+  }, {
+    key: 'showLineColour',
+    value: function showLineColour(colour) {
+      this.generateLines(null, colour);
     }
   }, {
     key: 'generateLines',
-    value: function generateLines() {
+    value: function generateLines(blockTitle) {
+      var indexType = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
       if (this.containerLines) {
         this.containerLines.destroy(true);
         this.scene.removeChild(this.containerLines);
@@ -65712,27 +65754,112 @@ var WocViz = function () {
       }
 
       var dots = [];
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var referenceBlock = (0, _lodash.find)(this.blocks, function (block) {
+        return block.blockTitle === blockTitle;
+      });
 
-      try {
-        for (var _iterator3 = this.blocks[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var block = _step3.value;
+      if (blockTitle) {
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
 
-          dots = dots.concat(block.dots);
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-            _iterator3.return();
+          for (var _iterator3 = this.blocks[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var block = _step3.value;
+
+            // console.log(block.links, referenceBlock.links);
+            if (block === referenceBlock) {
+              dots = dots.concat(block.dots);
+            } else {
+              var _iteratorNormalCompletion4 = true;
+              var _didIteratorError4 = false;
+              var _iteratorError4 = undefined;
+
+              try {
+                for (var _iterator4 = block.dots[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                  var dot = _step4.value;
+
+                  if (referenceBlock.links.indexOf(dot.indexType) > -1) {
+                    dots.push(dot);
+                  }
+                }
+              } catch (err) {
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                    _iterator4.return();
+                  }
+                } finally {
+                  if (_didIteratorError4) {
+                    throw _iteratorError4;
+                  }
+                }
+              }
+            }
           }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
         } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+              _iterator3.return();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+      } else {
+        var _iteratorNormalCompletion5 = true;
+        var _didIteratorError5 = false;
+        var _iteratorError5 = undefined;
+
+        try {
+          for (var _iterator5 = this.blocks[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+            var _block = _step5.value;
+            var _iteratorNormalCompletion6 = true;
+            var _didIteratorError6 = false;
+            var _iteratorError6 = undefined;
+
+            try {
+              for (var _iterator6 = _block.dots[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                var _dot = _step6.value;
+
+                if (_dot.indexType === indexType) {
+                  dots.push(_dot);
+                }
+              }
+            } catch (err) {
+              _didIteratorError6 = true;
+              _iteratorError6 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                  _iterator6.return();
+                }
+              } finally {
+                if (_didIteratorError6) {
+                  throw _iteratorError6;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError5 = true;
+          _iteratorError5 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion5 && _iterator5.return) {
+              _iterator5.return();
+            }
+          } finally {
+            if (_didIteratorError5) {
+              throw _iteratorError5;
+            }
           }
         }
       }
@@ -65741,14 +65868,17 @@ var WocViz = function () {
         return dot.dotType;
       });
       this.containerLines = new _src.Container();
+      this.containerLines.alpha = 0;
 
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
+      this.lines = [];
+
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
 
       try {
-        for (var _iterator4 = Object.keys(groupDots)[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var group = _step4.value;
+        for (var _iterator7 = Object.keys(groupDots)[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var group = _step7.value;
 
           var line = new _src.Graphics();
           this.containerLines.addChild(line);
@@ -65756,35 +65886,37 @@ var WocViz = function () {
           var points = [];
           var color = void 0;
 
-          var _iteratorNormalCompletion5 = true;
-          var _didIteratorError5 = false;
-          var _iteratorError5 = undefined;
+          var _iteratorNormalCompletion8 = true;
+          var _didIteratorError8 = false;
+          var _iteratorError8 = undefined;
 
           try {
-            for (var _iterator5 = groupDots[group][Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-              var dot = _step5.value;
+            for (var _iterator8 = groupDots[group][Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+              var _dot2 = _step8.value;
 
-              var _dot$getGlobalPoint = dot.getGlobalPoint(),
-                  x = _dot$getGlobalPoint.x,
-                  y = _dot$getGlobalPoint.y;
+              var _dot2$getGlobalPoint = _dot2.getGlobalPoint(),
+                  x = _dot2$getGlobalPoint.x,
+                  y = _dot2$getGlobalPoint.y;
 
-              color = dot.color;
+              color = _dot2.color;
               points.push([x, y]);
             }
           } catch (err) {
-            _didIteratorError5 = true;
-            _iteratorError5 = err;
+            _didIteratorError8 = true;
+            _iteratorError8 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                _iterator5.return();
+              if (!_iteratorNormalCompletion8 && _iterator8.return) {
+                _iterator8.return();
               }
             } finally {
-              if (_didIteratorError5) {
-                throw _iteratorError5;
+              if (_didIteratorError8) {
+                throw _iteratorError8;
               }
             }
           }
+
+          this.lines.push({ line: line, color: color });
 
           line.moveTo(points[0][0], points[0][1]);
           line.lineStyle(0.5, color);
@@ -65796,21 +65928,27 @@ var WocViz = function () {
           line.endFill();
         }
       } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
+          if (!_iteratorNormalCompletion7 && _iterator7.return) {
+            _iterator7.return();
           }
         } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
+          if (_didIteratorError7) {
+            throw _iteratorError7;
           }
         }
       }
 
       this.scene.addChild(this.containerLines);
+
+      _gsap.TweenMax.to(this.containerLines, .5, {
+        alpha: 1
+      });
+      (0, _config.setMinHeight)(this.scene.height + 75);
+      this.resizeRenderer();
     }
   }, {
     key: 'startGUI',
@@ -65877,7 +66015,7 @@ var WocViz = function () {
 
 exports.default = WocViz;
 
-},{"./components/block/Block":182,"./components/renderer/renderer":185,"./utils/Maths":188,"./utils/config":189,"./utils/loader":190,"dat-gui":2,"fastclick":7,"lodash":10,"pixi.js/src":135,"stats-js":177}],181:[function(require,module,exports){
+},{"./components/block/Block":182,"./components/renderer/renderer":185,"./utils/Maths":188,"./utils/config":189,"./utils/loader":190,"dat-gui":2,"fastclick":7,"gsap":8,"lodash":10,"pixi.js/src":135,"stats-js":177}],181:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -66000,7 +66138,11 @@ var Block = function (_Container) {
   /**
    * @constructor
    * @param title
-   * @param radius
+   * @param links
+   * @param images
+   * @param body
+   * @param link
+   * @param url
    */
   function Block(props) {
     _classCallCheck(this, Block);
@@ -66015,6 +66157,8 @@ var Block = function (_Container) {
         url = props.url;
 
     _this.linkURL = url;
+    _this.blockTitle = title;
+    _this.links = links;
 
     _this.hitTest = new _src.Graphics();
     _this.addChild(_this.hitTest);
@@ -66037,7 +66181,7 @@ var Block = function (_Container) {
     value: function addEvents() {
       this.buttonMode = true;
       this.interactive = true;
-      var events = ['tap', 'click', 'mouseover', 'mouseout'];
+      var events = ['mouseover', 'mouseout'];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -66069,10 +66213,12 @@ var Block = function (_Container) {
       switch (event.type) {
         case 'tap':
         case 'click':
+          // this.emit('click', {title: this.blockTitle});
           window.open(this.linkURL);
           break;
 
         case 'mouseover':
+          this.emit('over', { title: this.blockTitle });
           _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .35, overwrite: 'all' });
           _gsap.TweenMax.to(this.info, .25, { alpha: 1, x: this.info.__startPos + 10, overwrite: 'all' });
           _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .1, overwrite: 'all' });
@@ -66080,6 +66226,7 @@ var Block = function (_Container) {
           break;
 
         case 'mouseout':
+          this.emit('out', { title: this.blockTitle });
           _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .5, overwrite: 'all' });
           _gsap.TweenMax.to(this.info, .25, { alpha: 0, x: this.info.__startPos, delay: .1, overwrite: 'all' });
           _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos, overwrite: 'all' });
@@ -66165,6 +66312,8 @@ var Block = function (_Container) {
   }, {
     key: 'addLinks',
     value: function addLinks(links) {
+      var _this2 = this;
+
       this.linksContainer = new _src.Container();
       this.linksContainer.position.y = (0, _config.IS_MOBILE)() ? 0 : 2;
       this.dots = [];
@@ -66182,8 +66331,12 @@ var Block = function (_Container) {
         for (var _iterator3 = links[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
           var link = _step3.value;
 
-          var dot = new _ColorDot2.default(types[link]);
+          var dot = new _ColorDot2.default(link, types[link]);
+          dot.blockTitle = this.blockTitle;
           dot.position.x = col % 2 * offset;
+          dot.on('clickDot', function (event) {
+            _this2.emit('clickDot', event);
+          });
 
           if (col % 2 === 0) row++;
 
@@ -66237,6 +66390,34 @@ var Block = function (_Container) {
       this.link.position.y = this.info.position.y + this.info.height + offset + 3;
       this.link.__startPos = this.link.position.x;
       this.addChild(this.link);
+
+      this.link.buttonMode = true;
+      this.link.interactive = true;
+      var events = ['tap', 'click'];
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = events[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var event = _step4.value;
+
+          this.link.on(event, this.eventHandler.bind(this));
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
 
       this.arrow = new _arrow2.default();
       this.arrow.alpha = 0;
@@ -66301,7 +66482,7 @@ function _inherits(subClass, superClass) {
 var ColorDot = function (_Graphics) {
   _inherits(ColorDot, _Graphics);
 
-  function ColorDot(data) {
+  function ColorDot(indexType, data) {
     _classCallCheck(this, ColorDot);
 
     var _this = _possibleConstructorReturn(this, (ColorDot.__proto__ || Object.getPrototypeOf(ColorDot)).call(this));
@@ -66312,16 +66493,54 @@ var ColorDot = function (_Graphics) {
 
     _this.dotType = id;
     _this.color = color;
+    _this.indexType = indexType;
 
     // console.log(data);
 
     _this.beginFill(color);
     _this.drawCircle(0, 0, radius);
     _this.endFill();
+    _this.addEvents();
     return _this;
   }
 
   _createClass(ColorDot, [{
+    key: 'addEvents',
+    value: function addEvents() {
+      this.buttonMode = true;
+      this.interactive = true;
+      var events = ['tap', 'click'];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var event = _step.value;
+
+          this.on(event, this.eventHandler.bind(this));
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'eventHandler',
+    value: function eventHandler() {
+      this.emit('clickDot', { indexType: this.indexType });
+    }
+  }, {
     key: 'getGlobalPoint',
     value: function getGlobalPoint() {
       return this.toGlobal({ x: 0, y: 0 });
@@ -66656,10 +66875,9 @@ var addCurveSegment = exports.addCurveSegment = function addCurveSegment(context
       t = void 0,
       u = void 0;
   var s = new _smooth2.default(points, {
-    method: 'sinc',
+    method: 'cubic',
     clip: 'clamp',
-    lanczosFilterSize: 2,
-    cubicTension: 0
+    cubicFilterSize: 10
   });
 
   averageLineLength = 1;
@@ -66923,7 +67141,7 @@ var Enum = exports.Enum = {
   CLIP_MIRROR: 'mirror',
 
   /* Constants for control over the cubic interpolation tension */
-  CUBIC_TENSION_DEFAULT: 5,
+  CUBIC_TENSION_DEFAULT: 0,
   CUBIC_TENSION_CATMULL_ROM: 0
 };
 

@@ -4,8 +4,8 @@ import attachFastClick from 'fastclick';
 import {
   Graphics,
   Container } from 'pixi.js/src';
-import { groupBy } from 'lodash';
-// import perlin from 'perlin-noise';
+import { groupBy, find } from 'lodash';
+import { TweenMax } from 'gsap';
 
 import { setSize, getSize, DEBUG, IS_MOBILE, setMobile, setData, getData, setMinHeight } from './utils/config';
 import { roundRandom, random, round, addCurveSegment } from './utils/Maths';
@@ -110,13 +110,25 @@ class WocViz {
 
     for (const blockData of blocks) {
       const block = new Block(blockData);
+      block.on('over', this.onBlockOver.bind(this));
+      block.on('clickDot', this.onDotClick.bind(this));
       this.blocks.push(block);
       this.scene.addChild(block);
       this.maxWidthBlock = round(Math.max(this.maxWidthBlock, block.width));
     }
 
     this.calculatePositionBlocks();
+    setMinHeight(this.scene.height + 75);
+    this.resizeRenderer();
 
+  }
+
+  onBlockOver(event) {
+    this.generateLines(event.title);
+  }
+
+  onDotClick(event) {
+    this.generateLines(null, event.indexType);
   }
 
   calculatePoint(width, rowY, offset, row, i) {
@@ -163,7 +175,7 @@ class WocViz {
           break;
         }
         const block = this.blocks[index];
-        const offset = {x: 5, y: rowY === 0 ? 20 : 0};
+        const offset = {x: 5, y: rowY === 0 ? 30 : 0};
         const point = this.calculatePoint(block.width, rowY, offset, row, i);
         block.x = point.x;
         block.y = point.y;
@@ -172,13 +184,18 @@ class WocViz {
       rowY += IS_MOBILE() ? 90 : 180;
     }
 
-    this.generateLines();
-
-    setMinHeight(this.scene.height + 75);
-    this.resizeRenderer();
+    // this.generateLines();
   }
 
-  generateLines() {
+  showLine(block) {
+    this.generateLines(block);
+  }
+
+  showLineColour(colour) {
+    this.generateLines(null, colour);
+  }
+
+  generateLines(blockTitle, indexType = null) {
     if(this.containerLines) {
       this.containerLines.destroy(true);
       this.scene.removeChild(this.containerLines);
@@ -186,12 +203,38 @@ class WocViz {
     }
 
     let dots = [];
-    for (const block of this.blocks) {
-      dots = dots.concat(block.dots);
+    let referenceBlock = find(this.blocks, (block) => {
+      return block.blockTitle === blockTitle
+    });
+
+    if(blockTitle) {
+      for (const block of this.blocks) {
+        // console.log(block.links, referenceBlock.links);
+        if(block === referenceBlock) {
+          dots = dots.concat(block.dots);
+        } else {
+          for (const dot of block.dots) {
+            if(referenceBlock.links.indexOf(dot.indexType) > -1 ) {
+              dots.push(dot);
+            }
+          }
+        }
+      }
+    } else {
+      for (const block of this.blocks) {
+        for (const dot of block.dots) {
+          if(dot.indexType === indexType) {
+            dots.push(dot);
+          }
+        }
+      }
     }
 
     const groupDots = groupBy(dots, (dot) => dot.dotType);
     this.containerLines = new Container();
+    this.containerLines.alpha = 0;
+
+    this.lines = [];
 
     for (const group of Object.keys(groupDots)) {
       const line = new Graphics();
@@ -206,6 +249,8 @@ class WocViz {
         points.push([x, y]);
       }
 
+      this.lines.push({line: line, color: color});
+
       line.moveTo(points[0][0], points[0][1]);
       line.lineStyle(0.5, color);
 
@@ -218,6 +263,12 @@ class WocViz {
     }
 
     this.scene.addChild(this.containerLines);
+
+    TweenMax.to(this.containerLines, .5, {
+      alpha: 1
+    })
+    setMinHeight(this.scene.height + 75);
+    this.resizeRenderer();
   }
 
   startGUI() {
