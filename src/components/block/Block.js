@@ -27,7 +27,7 @@ export default class Block extends Container {
     this.addChild(this.hitTest);
 
     this.imageContainer = new Container();
-    this.imageContainer.alpha = .7;
+    this.imageContainer.alpha = .5;
     this.addChild(this.imageContainer);
 
     this.addImages(images);
@@ -62,7 +62,7 @@ export default class Block extends Container {
         break;
 
       case 'mouseout':
-        TweenMax.to(this.imageContainer, .5, {alpha: .7, overwrite: 'all'});
+        TweenMax.to(this.imageContainer, .5, {alpha: .5, overwrite: 'all'});
         TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1, overwrite: 'all'});
         TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos, overwrite: 'all'});
         TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos, overwrite: 'all'});

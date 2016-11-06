@@ -5,10 +5,10 @@ import {
   Graphics,
   Container } from 'pixi.js/src';
 import { groupBy } from 'lodash';
-import perlin from 'perlin-noise';
+// import perlin from 'perlin-noise';
 
 import { setSize, getSize, DEBUG, IS_MOBILE, setMobile, setData, getData, setMinHeight } from './utils/config';
-import { roundRandom, random, round, coin, distance } from './utils/Maths';
+import { roundRandom, random, round, addCurveSegment } from './utils/Maths';
 import { loadAssets, loadFonts } from './utils/loader';
 import Renderer from './components/renderer/renderer';
 import Block from './components/block/Block';
@@ -193,95 +193,31 @@ class WocViz {
     const groupDots = groupBy(dots, (dot) => dot.dotType);
     this.containerLines = new Container();
 
-    let first = false;
-
     for (const group of Object.keys(groupDots)) {
       const line = new Graphics();
-      first = true;
       this.containerLines.addChild(line);
 
-      let prevPoint;
+      const points = [];
+      let color;
 
       for (const dot of groupDots[group]) {
         const { x, y } = dot.getGlobalPoint();
-        if(first) {
-          line.moveTo(x, y);
-          prevPoint = {x, y};
-          first = false;
-        } else {
+        color = dot.color;
+        points.push([x, y]);
+      }
 
-          // option 3
-          // line.lineStyle(.5, dot.color);
+      line.moveTo(points[0][0], points[0][1]);
+      line.lineStyle(0.5, color);
 
-          // const dist = round(distance(prevPoint, {x, y}) / 10 );
-          const steps = guiParams.lineSegments;
-          const noise = perlin.generatePerlinNoise(1, steps);
-          const power = random(guiParams.noisePowerMin, guiParams.noisePowerMax);
-          let j = 0;
-          for (const point of this.linearInterpolation(prevPoint, {x, y}, steps)) {
-
-            if(j === 0) {
-              line.lineTo(point.x, point.y);
-            } else {
-              // const coinX = coin();
-              // const coinY = coin();
-
-              const xx = point.x + noise[j] * power;
-              const yy = point.y + noise[j] * power;
-
-              // option 2
-              const dist = distance({x: xx, y: yy}, prevPoint);
-              line.lineStyle(guiParams.strokeWidth + 1/ dist / 2, dot.color);
-
-              // option 2
-              // const dist = distance({x: xx, y: yy}, prevPoint);
-              // line.lineStyle(guiParams.strokeWidth + 10/dist, dot.color);
-              //
-
-              //
-              // const cpx = ((prevPoint.x + xx) + Math.atan(yy, xx) * dist) / 2;
-              // const cpy = ((prevPoint.y + yy) + Math.atan(yy, xx) * dist) / 2;
-
-              // line.quadraticCurveTo(
-              //   cpx, cpy, xx, yy
-              // );
-
-              line.lineTo(xx, yy);
-              // option 2
-              if(guiParams.sketch) {
-                line.moveTo(point.x, point.y);
-              } else {
-                line.moveTo(xx, yy);
-              }
-
-              prevPoint = {x: xx, y: yy};
-            }
-            j++;
-          }
-
-          line.lineTo(x, y);
-        }
+      for (let i = 0; i < points.length - 1; i++) {
+        addCurveSegment(line, i, points);
       }
 
       line.endFill();
+
     }
 
     this.scene.addChild(this.containerLines);
-  }
-
-  linearInterpolation(startPoint, endPoint, steps) {
-    const result = [];
-    const differenceX = endPoint.x - startPoint.x;
-    const differenceY = endPoint.y - startPoint.y;
-    const deltaX = differenceX / steps;
-    const deltaY = differenceY / steps;
-
-    for(let i = 0; i<steps; i++) {
-      const p = {x: startPoint.x + (deltaX * i), y: startPoint.y + (deltaY * i)};
-      if(coin() == 1) result.push(p);
-    }
-
-    return result;
   }
 
   startGUI() {

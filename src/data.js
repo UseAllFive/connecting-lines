@@ -27,7 +27,7 @@ export const data = {
     },
     {
       id: 1,
-      links: [1, 2, 3, 5],
+      links: [0, 1],
       title: 'Hotel\nCarlton',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -36,7 +36,7 @@ export const data = {
     },
     {
       id: 2,
-      links: [2, 3, 6, 7],
+      links: [0, 1, 2],
       title: 'Safety\nCurtain',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
