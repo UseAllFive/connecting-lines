@@ -65568,7 +65568,7 @@ var WocViz = function () {
 
       if (_config.DEBUG) {
         this.startStats();
-        this.startGUI();
+        // this.startGUI();
       }
 
       if (this.autoRender) this.update();
@@ -65660,7 +65660,7 @@ var WocViz = function () {
       var area = wr / row;
       return {
         x: area * i + (0, _Maths.random)(area - width),
-        y: (0, _Maths.random)(rowY + (0, _Maths.random)((0, _config.IS_MOBILE)() ? 5 : 20, (0, _config.IS_MOBILE)() ? -4 : -10), offset.y + rowY)
+        y: (0, _Maths.random)(rowY + (0, _Maths.random)((0, _config.IS_MOBILE)() ? 5 : 20, (0, _config.IS_MOBILE)() ? 0 : 0), offset.y + rowY)
       };
     }
   }, {
@@ -66129,8 +66129,8 @@ function _inherits(subClass, superClass) {
 }
 
 var data = (0, _config.getData)();
-var MAX_HEIGHT = 120 / 3;
-var MAX_WIDTH = 200 / 3;
+var MAX_HEIGHT = 120 / 2.5;
+var MAX_WIDTH = 200 / 2.5;
 
 var Block = function (_Container) {
   _inherits(Block, _Container);
@@ -66248,7 +66248,9 @@ var Block = function (_Container) {
       var addedImages = 0;
       var lastWidth = 0;
       var lastHeight = 0;
-      var offset = (0, _config.IS_MOBILE)() ? 5 : 20;
+      var lastX = 0;
+      var lastY = 0;
+      var offset = (0, _config.IS_MOBILE)() ? 5 : 15;
 
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
@@ -66265,34 +66267,37 @@ var Block = function (_Container) {
           var sprite = new _src.Sprite(texture);
           sprite.scale.set((0, _config.IS_MOBILE)() ? scale / 2 : scale);
 
-          lastWidth = sprite.width;
-          lastHeight = sprite.height;
-
           var pos = new _src.Point();
 
           switch (addedImages) {
             case 0:
-              pos.x = (0, _Maths.random)(0, offset);
-              pos.y = (0, _Maths.random)(0, offset);
+              pos.x = (0, _Maths.random)(5, offset);
+              pos.y = (0, _Maths.random)(5, offset);
+              // sprite.tint = 0xFF0000;
               break;
 
             case 1:
-              pos.x = lastWidth + offset + (0, _Maths.random)(0, offset);
-              pos.y = offset + (0, _Maths.random)(0, offset);
+              pos.x = lastX + lastWidth + 5 + (0, _Maths.random)(0, offset);
+              pos.y = (0, _Maths.random)(5, offset);
+              // sprite.tint = 0xFFFF00;
               break;
 
             case 2:
-              pos.x = offset + (0, _Maths.random)(0, offset);
-              pos.y = lastHeight + offset + (0, _Maths.random)(0, offset);
+              pos.x = (0, _Maths.random)(offset / 2, offset + 10);
+              pos.y = lastY + lastHeight + 5 + (0, _Maths.random)(0, offset);
+              // sprite.tint = 0x00FF00;
               break;
           }
 
           addedImages++;
 
-          sprite.x = pos.x;
-          sprite.y = pos.y;
+          sprite.x = lastX = pos.x;
+          sprite.y = lastY = pos.y;
 
           this.imageContainer.addChild(sprite);
+
+          lastWidth = Math.max(lastWidth, sprite.width);
+          lastHeight = Math.max(lastHeight, sprite.height);
         }
       } catch (err) {
         _didIteratorError2 = true;

@@ -7,8 +7,8 @@ import Arrow from '../arrow/arrow';
 import { styleTitle, styleTitleMobile, styleInfo, styleLink } from './styles';
 
 const data = getData();
-const MAX_HEIGHT = 120 / 3;
-const MAX_WIDTH = 200 / 3;
+const MAX_HEIGHT = 120 / 2.5;
+const MAX_WIDTH = 200 / 2.5;
 
 export default class Block extends Container {
   /**
@@ -90,7 +90,9 @@ export default class Block extends Container {
     let addedImages = 0;
     let lastWidth = 0;
     let lastHeight = 0;
-    const offset = IS_MOBILE() ? 5 : 20;
+    let lastX = 0;
+    let lastY = 0;
+    const offset = IS_MOBILE() ? 5 : 15;
 
     for (const asset of images) {
       const { texture } = Loader.resources[asset];
@@ -103,34 +105,37 @@ export default class Block extends Container {
       const sprite = new Sprite(texture);
       sprite.scale.set(IS_MOBILE() ? scale / 2 : scale );
 
-      lastWidth = sprite.width;
-      lastHeight = sprite.height;
-
       const pos = new Point();
 
       switch(addedImages) {
         case 0:
-          pos.x = random(0, offset);
-          pos.y = random(0, offset);
+          pos.x = random(5, offset);
+          pos.y = random(5, offset);
+          // sprite.tint = 0xFF0000;
           break;
 
         case 1:
-          pos.x = lastWidth + offset + random(0, offset);
-          pos.y = offset + random(0, offset);
+          pos.x = lastX + lastWidth + 5 + random(0, offset);
+          pos.y = random(5, offset);
+          // sprite.tint = 0xFFFF00;
           break;
 
         case 2:
-          pos.x = offset + random(0, offset);
-          pos.y = lastHeight + offset + random(0, offset);
+          pos.x = random(offset / 2, offset + 10);
+          pos.y = lastY + lastHeight + 5 + random(0, offset);
+          // sprite.tint = 0x00FF00;
           break;
       }
 
       addedImages++;
 
-      sprite.x = pos.x;
-      sprite.y = pos.y;
+      sprite.x = lastX = pos.x;
+      sprite.y = lastY = pos.y;
 
       this.imageContainer.addChild(sprite);
+
+      lastWidth = Math.max(lastWidth, sprite.width);
+      lastHeight = Math.max(lastHeight, sprite.height);
     }
   }
 

@@ -75,7 +75,7 @@ class WocViz {
 
     if(DEBUG) {
       this.startStats();
-      this.startGUI();
+      // this.startGUI();
     }
 
     if(this.autoRender) this.update();
@@ -137,7 +137,7 @@ class WocViz {
     const area = (wr / row);
     return {
       x: area * i + random(area - width),
-      y: random(rowY + random(IS_MOBILE() ? 5 : 20, IS_MOBILE() ? -4 : -10), offset.y + rowY)
+      y: random(rowY + random(IS_MOBILE() ? 5 : 20, IS_MOBILE() ? 0 : 0), offset.y + rowY)
     };
   }
 
