@@ -19,8 +19,6 @@ import { data } from './data.js';
  * @param {boolean} isMobile detect and pass if the component is rendered on mobile
  */
 
-console.log(parse(window.location.search));
-
 const is_mobile = parse(window.location.search) ? parse(window.location.search).mobile : false;
 
 const app = new WocViz({
