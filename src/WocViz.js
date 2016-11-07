@@ -175,7 +175,7 @@ class WocViz {
           break;
         }
         const block = this.blocks[index];
-        const offset = {x: 5, y: rowY === 0 ? 30 : 0};
+        const offset = {x: 10, y: rowY === 0 ? 30 : 0};
         const point = this.calculatePoint(block.width, rowY, offset, row, i);
         block.x = point.x;
         block.y = point.y;

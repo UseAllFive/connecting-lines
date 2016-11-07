@@ -5,12 +5,9 @@ export const styleTitle = {
   align: 'left'
 }
 
-export const styleTitleMobile = {
-  fontFamily: 'SangBleu BP',
+export const styleTitleMobile = Object.assign({}, styleTitle, {
   fontSize: 11,
-  fill: 0x000000,
-  align: 'left'
-};
+});
 
 export const styleInfo = {
   fontFamily: 'GT Sectra Trial',
@@ -19,9 +16,17 @@ export const styleInfo = {
   align: 'left'
 }
 
+export const styleInfoMobile = Object.assign({}, styleInfo, {
+  fontSize: 8,
+});
+
 export const styleLink = {
   fontFamily: 'Castledown',
   fontSize: 9,
   fill: 0x000000,
   align: 'left'
 }
+
+export const styleLinkMobile = Object.assign({}, styleLink, {
+  fontSize: 5,
+});
