@@ -5,7 +5,7 @@ import {
   Graphics,
   Container } from 'pixi.js/src';
 import { groupBy, find } from 'lodash';
-import { TweenMax } from 'gsap';
+import { TweenMax, TimelineMax } from 'gsap';
 
 import { setSize, getSize, DEBUG, IS_MOBILE, setMobile, setData, getData, setMinHeight } from './utils/config';
 import { roundRandom, random, round, addCurveSegment } from './utils/Maths';
@@ -196,6 +196,9 @@ class WocViz {
   }
 
   generateLines(blockTitle, indexType = null) {
+
+    TweenMax.killAll();
+
     if(this.containerLines) {
       this.containerLines.destroy(true);
       this.scene.removeChild(this.containerLines);
@@ -232,9 +235,14 @@ class WocViz {
 
     const groupDots = groupBy(dots, (dot) => dot.dotType);
     this.containerLines = new Container();
-    this.containerLines.alpha = 0;
+    this.scene.addChild(this.containerLines);
 
     this.lines = [];
+
+    // const ctx = this.renderer.view.getContext('2d');
+    // console.log(ctx);
+    //
+    console.log(groupDots);
 
     for (const group of Object.keys(groupDots)) {
       const line = new Graphics();
@@ -250,23 +258,85 @@ class WocViz {
       }
 
       this.lines.push({line: line, color: color});
+      // line.lineStyle(0.5, color);
+      // line.moveTo(points[0][0], points[0][1]);
 
-      line.moveTo(points[0][0], points[0][1]);
-      line.lineStyle(0.5, color);
+      // ctx.moveTo(points[0][0], points[0][1]);
+      // ctx.beginPath();
+      // ctx.lineWidth = 0.5;
+      // ctx.strokeStyle = color;
+      //
+
+      // timeline.duration(1);
+
+      // let curvePoints = [];
+
+      const timeline = new TimelineMax({
+        paused: true,
+        duration: 1,
+
+        onStart: function(l, c, x, y) {
+          l.moveTo(x, y);
+          l.lineStyle(0.5, color);
+        }.bind(this, line, color, points[0][0], points[0][1]),
+
+        onComplete: function(l) {
+          // console.log('finish curve');
+          // l.stroke();
+          l.endFill();
+        }.bind(this, line)
+
+      });
 
       for (let i = 0; i < points.length - 1; i++) {
-        addCurveSegment(line, i, points);
+
+        const curvePoints = addCurveSegment(i, points);
+      //   // let counter = 0;
+      //   // setTimeout(addCurveSegment, 100 * i, line, i, points);
+      // }
+
+        for (let j = 0; j < curvePoints.length; j++) {
+
+          const objRef = {
+            x: j === 0 ? points[i][0] : curvePoints[j - 1].x,
+            y: j === 0 ? points[i][1] : curvePoints[j - 1].y
+          };
+
+          timeline.add(TweenMax.to(objRef, 0.0025, {
+            x: curvePoints[j].x,
+            y: curvePoints[j].y,
+            onStart: function(o, l) {
+              // console.log(o);
+              l.moveTo(o.x, o.y);
+            }.bind(this, objRef, line),
+            onUpdate: function(o, l) {
+              // console.log(o);
+              l.lineTo(o.x, o.y);
+            }.bind(this, objRef, line),
+            ease: 'linear'
+          }));
+
+          // setTimeout(() => { }, 100 * counter);
+          // counter++;
+        };
+
+
       }
 
-      line.endFill();
+      timeline.play();
+
+
+      // line.endFill();
+
+      // console.log(curvePoints);
+
+      // line.endFill();
 
     }
 
-    this.scene.addChild(this.containerLines);
-
-    TweenMax.to(this.containerLines, .5, {
-      alpha: 1
-    })
+    // TweenMax.to(this.containerLines, .5, {
+    //   alpha: 1
+    // })
     setMinHeight(this.scene.height + 75);
     this.resizeRenderer();
   }

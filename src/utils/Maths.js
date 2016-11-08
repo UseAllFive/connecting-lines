@@ -21,16 +21,20 @@ export const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 export const distance = (v1, v2) => Math.sqrt( Math.pow((v2.x - v1.x), 2) + Math.pow((v2.y - v1.y), 2) );
 const distanceArrayPoint = (a,b) => Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2));
 
-export const addCurveSegment = (context, i, points) => {
+export const addCurveSegment = (i, points) => {
+
   let averageLineLength, du, end, j, k, pieceCount, pieceLength, ref, ref1, ref2, ref3, start, t, u;
   const s = new Smooth(points, {
     method: 'cubic',
   	clip: 'clamp',
-  	cubicFilterSize: 10,
+  	cubicFilterSize: 15,
   });
 
   averageLineLength = 1;
   pieceCount = 4;
+
+  const returnPoints = [];
+
   for (t = j = 0, ref = 1 / pieceCount; j < 1; t = j += ref) {
     ref1 = [s(i + t), s(i + t + 1 / pieceCount)];
     start = ref1[0];
@@ -40,9 +44,10 @@ export const addCurveSegment = (context, i, points) => {
     du = averageLineLength / pieceLength;
     for (u = k = 0, ref2 = 1 / pieceCount, ref3 = du; ref3 > 0 ? k < ref2 : k > ref2; u = k += ref3) {
       const val = s(i + t + u);
-      context.lineTo(val[0], val[1]);
+      returnPoints.push({x: val[0], y: val[1]});
     }
   }
-  const valend = s(i + 1);
-  context.lineTo(valend[0], valend[1]);
+  // const valend = s(i + 1);
+  // returnPoints.push({x: valend[0], y: valend[1]});
+  return returnPoints;
 };

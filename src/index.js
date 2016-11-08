@@ -28,7 +28,7 @@ const app = new WocViz({
   autoRender: true,
   canvasContainer: document.body,
   showDebug: false,
-  forceCanvas: false,
+  forceCanvas: true,
   isMobile: is_mobile,
 });
 
