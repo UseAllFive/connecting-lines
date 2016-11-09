@@ -3,17 +3,17 @@ const assetsFolder = 'static/images/';
 export const data = {
   assetsFolder,
   types: [
-    {id: 0, color: 0x3440FB, value: 'ARCHITECTURE'},
-    {id: 1, color: 0x9B4AB5, value: 'BEYOND MUSEUMS'},
-    {id: 2, color: 0x67B2DC, value: 'FUN PALACE'},
-    {id: 3, color: 0x9DDE61, value: 'GLOBALIZATION'},
-    {id: 4, color: 0xFD6CE8, value: 'INSTRUCTION-BASED ART'},
-    {id: 5, color: 0xFC2B1C, value: 'LITERATURE'},
-    {id: 6, color: 0xEFCF43, value: 'LIVE ART'},
-    {id: 7, color: 0xFCA747, value: 'PROTEST AGAINST FORGETTING'},
-    {id: 8, color: 0xFFFFFF * Math.random(), value: 'RULES OF THE GAME'},
-    {id: 9, color: 0xFFFFFF * Math.random(), value: 'SCIENCE'},
-    {id: 10, color: 0xFFFFFF * Math.random(), value: 'URBANISM/CITIES'},
+    {id: 0, colorId: 'blue', color: 0x3440FB, value: 'ARCHITECTURE'},
+    {id: 1, colorId: 'purple', color: 0x9B4AB5, value: 'BEYOND MUSEUMS'},
+    {id: 2, colorId: 'lightblue', color: 0x67B2DC, value: 'FUN PALACE'},
+    {id: 3, colorId: 'lightgreen', color: 0x9DDE61, value: 'GLOBALIZATION'},
+    {id: 4, colorId: 'pink', color: 0xFD6CE8, value: 'INSTRUCTION-BASED ART'},
+    {id: 5, colorId: 'red', color: 0xFC2B1C, value: 'LITERATURE'},
+    {id: 6, colorId: 'yellow', color: 0xEFCF43, value: 'LIVE ART'},
+    {id: 7, colorId: 'darkyello', color: 0xFCA747, value: 'PROTEST AGAINST FORGETTING'},
+    {id: 8, colorId: 'white1', color: 0xFFFFFF * Math.random(), value: 'RULES OF THE GAME'},
+    {id: 9, colorId: 'white2', color: 0xFFFFFF * Math.random(), value: 'SCIENCE'},
+    {id: 10, colorId: 'white3', color: 0xFFFFFF * Math.random(), value: 'URBANISM/CITIES'},
   ],
   blocks: [
     {

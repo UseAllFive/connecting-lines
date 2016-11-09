@@ -23,11 +23,12 @@ export default class Block extends Container {
   constructor(props) {
     super();
 
-    const { title, links, images, body, link, url } = props;
+    const { title, links, images, body, link, url, id } = props;
 
     this.linkURL = url;
     this.blockTitle = title;
     this.links = links;
+    this.id = id;
 
     this.hitTest = new Graphics();
     this.addChild(this.hitTest);
@@ -50,7 +51,7 @@ export default class Block extends Container {
   addEvents() {
     this.buttonMode = true;
     this.interactive = true;
-    const events = ['mouseover', 'mouseout'];
+    const events = IS_MOBILE() ? ['tap'] : ['mouseover', 'mouseout'];
     for (const event of events) {
       this.on(event, this.eventHandler.bind(this));
     }
@@ -58,28 +59,43 @@ export default class Block extends Container {
 
   eventHandler(event) {
     switch(event.type) {
-      case 'tap':
       case 'click':
+        if(event.target.alpha === 0) return;
         // this.emit('click', {title: this.blockTitle});
         window.open(this.linkURL);
         break;
 
+      case 'tap':
+        if(event.currentTarget instanceof Text) {
+          event.stopPropagation();
+          if(event.target.alpha === 0) return;
+          window.open(this.linkURL);
+          return;
+        }
       case 'mouseover':
         this.emit('over', {title: this.blockTitle});
-        TweenMax.to(this.imageContainer, .5, {alpha: .35, overwrite: 'all'});
-        TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10, overwrite: 'all'});
-        TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1, overwrite: 'all'});
-        TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1, overwrite: 'all'});
+        this.onMouseOver();
         break;
 
       case 'mouseout':
-        this.emit('out', {title: this.blockTitle});
-        TweenMax.to(this.imageContainer, .5, {alpha: .5, overwrite: 'all'});
-        TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1, overwrite: 'all'});
-        TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos, overwrite: 'all'});
-        TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos, overwrite: 'all'});
+        // this.emit('out', {title: this.blockTitle});
+        this.onMouseOut();
         break;
     }
+  }
+
+  onMouseOver() {
+    TweenMax.to(this.imageContainer, .5, {alpha: .35, overwrite: 'all'});
+    TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10, overwrite: 'all'});
+    TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1, overwrite: 'all'});
+    TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1, overwrite: 'all'});
+  }
+
+  onMouseOut() {
+    TweenMax.to(this.imageContainer, .5, {alpha: .5, overwrite: 'all'});
+    TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1, overwrite: 'all'});
+    TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos, overwrite: 'all'});
+    TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos, overwrite: 'all'});
   }
 
   createHitTest() {
@@ -87,8 +103,6 @@ export default class Block extends Container {
     this.hitTest.beginFill(0xFf00ff, 0);
     this.hitTest.drawRect(0, 0, this.maxWidthBlock, this.height);
     this.hitTest.endFill();
-
-    console.log(this.maxWidthBlock);
   }
 
   addImages(images) {
@@ -161,8 +175,12 @@ export default class Block extends Container {
     let col = 0;
     const offset = IS_MOBILE() ? 3.5 : 7;
     for (const link of links) {
-      const dot = new ColorDot(link, types[link]);
-      dot.blockTitle = this.blockTitle;
+      const dot = new ColorDot(
+        this.id,
+        this.blockTitle,
+        link,
+        types[link]
+      );
       dot.position.x = ( col % 2 ) * offset;
       dot.on('clickDot', (event) => {
         this.emit('clickDot', event);
@@ -193,7 +211,7 @@ export default class Block extends Container {
     this.info = new Text(info, IS_MOBILE() ? styleInfoMobile : styleInfo);
     // this.info.resolution = window.devicePixelRatio;
     this.info.alpha = 0;
-    this.info.position.x = IS_MOBILE() ? 7 : 15;
+    this.info.position.x = IS_MOBILE() ? -2 : 15;
     this.info.position.y = this.title.height + offset;
     this.info.__startPos = this.info.position.x;
     this.addChild(this.info);
@@ -202,15 +220,15 @@ export default class Block extends Container {
     this.link = new Text(linkCopy.toUpperCase(), IS_MOBILE() ? styleLinkMobile : styleLink);
     // this.link.resolution = window.devicePixelRatio;
     this.link.alpha = 0;
-    this.link.position.x = IS_MOBILE() ? 7 : 15;
-    this.link.position.y = this.info.position.y + this.info.height + offset + 3;
+    this.link.position.x = IS_MOBILE() ? -2 : 15;
+    this.link.position.y = this.info.position.y + this.info.height + (IS_MOBILE() ? offset : offset + 3);
     this.link.__startPos = this.link.position.x;
     this.addChild(this.link);
-    this.maxWidthBlock = Math.max(this.maxWidthBlock, this.link.width + this.link.position.x);
+    this.maxWidthBlock = Math.max(this.maxWidthBlock, this.link.width + this.link.__startPos + 10);
 
     this.link.buttonMode = true;
     this.link.interactive = true;
-    const events = ['tap', 'click'];
+    const events = ['click', 'tap'];
     for (const event of events) {
       this.link.on(event, this.eventHandler.bind(this));
     }
@@ -218,11 +236,11 @@ export default class Block extends Container {
     this.arrow = new Arrow();
     this.arrow.alpha = 0;
     this.arrow.scale.set(IS_MOBILE() ? 0.4 : 1);
-    this.arrow.position.x = this.link.position.x + this.link.width + (IS_MOBILE() ? 1.5 : 3);
-    this.arrow.position.y = (this.link.position.y + 1) + this.arrow.height / 2;
+    this.arrow.position.x = this.link.position.x + this.link.width + (IS_MOBILE() ? 0 : 3);
+    this.arrow.position.y = this.link.position.y + this.arrow.height / 2;
     this.arrow.__startPos = this.arrow.position.x;
     this.addChild(this.arrow);
-    this.maxWidthBlock = Math.max(this.maxWidthBlock, this.arrow.width + this.arrow.position.x);
+    this.maxWidthBlock = Math.max(this.maxWidthBlock, this.arrow.width + this.arrow.__startPos + 10);
 
   }
 

@@ -4,7 +4,7 @@ import attachFastClick from 'fastclick';
 import {
   Graphics,
   Container } from 'pixi.js/src';
-import { groupBy, find } from 'lodash';
+import { groupBy, find, filter } from 'lodash';
 import { TweenMax, TimelineMax } from 'gsap';
 
 import { setSize, getSize, DEBUG, IS_MOBILE, setMobile, setData, getData, setMinHeight } from './utils/config';
@@ -101,6 +101,37 @@ class WocViz {
 
     this.scene = new Container();
     this.scene.interactive = true;
+
+    this.sceneHitTest = new Graphics();
+    this.sceneHitTest.interactive = true;
+    this.scene.addChild(this.sceneHitTest);
+  }
+
+  addEvents() {
+    this.sceneHitTest.on(IS_MOBILE() ? 'tap' : 'click', this.hideAllLines.bind(this));
+  }
+
+  hideAllLines(event) {
+    if(event.target instanceof Block) {
+      return;
+    }
+
+    TweenMax.killAll();
+
+    this.hideAllOpenedBlocks();
+
+    if(this.containerLines) {
+      this.containerLines.destroy(true);
+      this.scene.removeChild(this.containerLines);
+      this.containerLines = null;
+    }
+
+  }
+
+  hideAllOpenedBlocks() {
+    this.blocks.forEach((block) => {
+      block.onMouseOut();
+    });
   }
 
   addObjects() {
@@ -117,18 +148,22 @@ class WocViz {
       this.maxWidthBlock = round(Math.max(this.maxWidthBlock, block.width));
     }
 
+    this.addEvents();
     this.calculatePositionBlocks();
-    setMinHeight(this.scene.height + 75);
+    setMinHeight(this.scene.height + 10);
     this.resizeRenderer();
 
   }
 
   onBlockOver(event) {
     this.generateLines(event.title);
+    if(IS_MOBILE()) {
+      this.hideAllOpenedBlocks();
+    }
   }
 
   onDotClick(event) {
-    this.generateLines(null, event.indexType);
+    this.generateLines(event.blockTitle, event.indexType);
   }
 
   calculatePoint(width, rowY, offset, row, i) {
@@ -145,7 +180,7 @@ class WocViz {
     const { wr } = getSize();
 
     let flagHasChanged = false;
-    const tempMaxPerRow = round(wr / (this.maxWidthBlock * (IS_MOBILE() ? 1 : 1.5)));
+    const tempMaxPerRow = round(wr / (this.maxWidthBlock * (IS_MOBILE() ? 1.2 : 1.5)));
     if(!this.maxPerRow) {
       this.maxPerRow = tempMaxPerRow;
       flagHasChanged = true;
@@ -191,10 +226,6 @@ class WocViz {
     this.generateLines(block);
   }
 
-  showLineColour(colour) {
-    this.generateLines(null, colour);
-  }
-
   generateLines(blockTitle, indexType = null) {
 
     TweenMax.killAll();
@@ -210,7 +241,7 @@ class WocViz {
       return block.blockTitle === blockTitle
     });
 
-    if(blockTitle) {
+    if(blockTitle && !indexType) {
       for (const block of this.blocks) {
         // console.log(block.links, referenceBlock.links);
         if(block === referenceBlock) {
@@ -233,16 +264,16 @@ class WocViz {
       }
     }
 
-    const groupDots = groupBy(dots, (dot) => dot.dotType);
+    // sort dots to be the rollovered first
+    const sortedFirstDots = filter(dots, (dot) => dot.blockTitle === blockTitle);
+    const sortedLastDots = filter(dots, (dot) => dot.blockTitle !== blockTitle);
+    const sortedDots = [].concat(sortedFirstDots).concat(sortedLastDots);
+
+    const groupDots = groupBy(sortedDots, (dot) => dot.colorId);
     this.containerLines = new Container();
     this.scene.addChild(this.containerLines);
 
     this.lines = [];
-
-    // const ctx = this.renderer.view.getContext('2d');
-    // console.log(ctx);
-    //
-    console.log(groupDots);
 
     for (const group of Object.keys(groupDots)) {
       const line = new Graphics();
@@ -257,23 +288,17 @@ class WocViz {
         points.push([x, y]);
       }
 
-      this.lines.push({line: line, color: color});
-      // line.lineStyle(0.5, color);
-      // line.moveTo(points[0][0], points[0][1]);
-
-      // ctx.moveTo(points[0][0], points[0][1]);
-      // ctx.beginPath();
-      // ctx.lineWidth = 0.5;
-      // ctx.strokeStyle = color;
+      // const sortedPoints = sortBy(points, (point) => {
+      //   return distance({x: points[0][0], y: points[0][1]}, {x: point[0], y: point[y]});
+      // })
+      //
       //
 
-      // timeline.duration(1);
-
-      // let curvePoints = [];
+      this.lines.push({line: line, color: color});
 
       const timeline = new TimelineMax({
         paused: true,
-        duration: 1,
+        // smoothChildTiming: true,
 
         onStart: function(l, c, x, y) {
           l.moveTo(x, y);
@@ -284,6 +309,7 @@ class WocViz {
           // console.log('finish curve');
           // l.stroke();
           l.endFill();
+
         }.bind(this, line)
 
       });
@@ -291,9 +317,6 @@ class WocViz {
       for (let i = 0; i < points.length - 1; i++) {
 
         const curvePoints = addCurveSegment(i, points);
-      //   // let counter = 0;
-      //   // setTimeout(addCurveSegment, 100 * i, line, i, points);
-      // }
 
         for (let j = 0; j < curvePoints.length; j++) {
 
@@ -302,19 +325,20 @@ class WocViz {
             y: j === 0 ? points[i][1] : curvePoints[j - 1].y
           };
 
-          timeline.add(TweenMax.to(objRef, 0.0025, {
-            x: curvePoints[j].x,
-            y: curvePoints[j].y,
-            onStart: function(o, l) {
-              // console.log(o);
-              l.moveTo(o.x, o.y);
-            }.bind(this, objRef, line),
-            onUpdate: function(o, l) {
-              // console.log(o);
-              l.lineTo(o.x, o.y);
-            }.bind(this, objRef, line),
-            ease: 'linear'
-          }));
+          const time = (1 / curvePoints.length) * .6;
+          timeline.add(
+            TweenMax.to(objRef, time, {
+              x: curvePoints[j].x,
+              y: curvePoints[j].y,
+              // onStart: function(o, l) {
+                // l.moveTo(o.x, o.y);
+              // }.bind(this, objRef, line),
+              onComplete: function(o, l) {
+                l.lineTo(o.x, o.y);
+              }.bind(this, objRef, line),
+              ease: 'linear',
+            })
+          );
 
           // setTimeout(() => { }, 100 * counter);
           // counter++;
@@ -337,8 +361,8 @@ class WocViz {
     // TweenMax.to(this.containerLines, .5, {
     //   alpha: 1
     // })
-    setMinHeight(this.scene.height + 75);
-    this.resizeRenderer();
+    // setMinHeight(this.scene.height + 10);
+    // this.resizeRenderer();
   }
 
   startGUI() {
@@ -369,6 +393,13 @@ class WocViz {
 
   resizeRenderer() {
     this.renderer.resize(getSize().wr, Math.max(getSize().minHeight, getSize().hr));
+
+    console.log(this.renderer);
+
+    this.sceneHitTest.clear();
+    this.sceneHitTest.beginFill(0xFf00ff, 0);
+    this.sceneHitTest.drawRect(0, 0, this.renderer.width, this.renderer.height);
+    this.sceneHitTest.endFill();
   }
 
   /*

@@ -17,7 +17,7 @@ export const styleInfo = {
 }
 
 export const styleInfoMobile = Object.assign({}, styleInfo, {
-  fontSize: 8,
+  fontSize: 7,
 });
 
 export const styleLink = {

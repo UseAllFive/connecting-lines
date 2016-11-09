@@ -25,13 +25,13 @@ export const addCurveSegment = (i, points) => {
 
   let averageLineLength, du, end, j, k, pieceCount, pieceLength, ref, ref1, ref2, ref3, start, t, u;
   const s = new Smooth(points, {
-    method: 'cubic',
+    method: 'sinc',
   	clip: 'clamp',
-  	cubicFilterSize: 15,
+  	sincFilterSize: 20,
   });
 
   averageLineLength = 1;
-  pieceCount = 4;
+  pieceCount = 2;
 
   const returnPoints = [];
 
