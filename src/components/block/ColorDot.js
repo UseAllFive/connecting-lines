@@ -2,18 +2,18 @@ import { Graphics } from 'pixi.js/src';
 import { IS_MOBILE } from '../../utils/config';
 
 export default class ColorDot extends Graphics {
-  constructor(blockId, blockTitle, indexType, data) {
+  constructor(blockId, blockSlug, indexType, data) {
     super();
 
     const radius = IS_MOBILE() ? 1.5 : 3;
-    const { color, id, colorId } = data;
+    const { color, id, slug } = data;
 
     this.dotType = id;
     this.color = color;
-    this.colorId = colorId;
     this.indexType = indexType;
     this.blockId = blockId;
-    this.blockTitle = blockTitle;
+    this.blockSlug = blockSlug;
+    this.dotSlug = slug;
 
     // console.log(data);
 
@@ -34,8 +34,9 @@ export default class ColorDot extends Graphics {
 
   eventHandler() {
     this.emit('clickDot', {
-      blockTitle: this.blockTitle,
-      indexType: this.indexType
+      blockSlug: this.blockSlug,
+      indexType: this.indexType,
+      dotSlug: this.dotSlug,
     });
   }
 

@@ -3,22 +3,23 @@ const assetsFolder = 'static/images/';
 export const data = {
   assetsFolder,
   types: [
-    {id: 0, colorId: 'blue', color: 0x3440FB, value: 'ARCHITECTURE'},
-    {id: 1, colorId: 'purple', color: 0x9B4AB5, value: 'BEYOND MUSEUMS'},
-    {id: 2, colorId: 'lightblue', color: 0x67B2DC, value: 'FUN PALACE'},
-    {id: 3, colorId: 'lightgreen', color: 0x9DDE61, value: 'GLOBALIZATION'},
-    {id: 4, colorId: 'pink', color: 0xFD6CE8, value: 'INSTRUCTION-BASED ART'},
-    {id: 5, colorId: 'red', color: 0xFC2B1C, value: 'LITERATURE'},
-    {id: 6, colorId: 'yellow', color: 0xEFCF43, value: 'LIVE ART'},
-    {id: 7, colorId: 'darkyello', color: 0xFCA747, value: 'PROTEST AGAINST FORGETTING'},
-    {id: 8, colorId: 'white1', color: 0xFFFFFF * Math.random(), value: 'RULES OF THE GAME'},
-    {id: 9, colorId: 'white2', color: 0xFFFFFF * Math.random(), value: 'SCIENCE'},
-    {id: 10, colorId: 'white3', color: 0xFFFFFF * Math.random(), value: 'URBANISM/CITIES'},
+    {id: 0, slug: 'architecture', color: 0x3440FB, value: 'ARCHITECTURE'},
+    {id: 1, slug: 'beyond-museums', color: 0x9B4AB5, value: 'BEYOND MUSEUMS'},
+    {id: 2, slug: 'fun-palace', color: 0x67B2DC, value: 'FUN PALACE'},
+    {id: 3, slug: 'globalization', color: 0x9DDE61, value: 'GLOBALIZATION'},
+    {id: 4, slug: 'instruction-based', color: 0xFD6CE8, value: 'INSTRUCTION-BASED ART'},
+    {id: 5, slug: 'literature', color: 0xFC2B1C, value: 'LITERATURE'},
+    {id: 6, slug: 'live-art', color: 0xEFCF43, value: 'LIVE ART'},
+    {id: 7, slug: 'protest-against-forgetting', color: 0xFCA747, value: 'PROTEST AGAINST FORGETTING'},
+    {id: 8, slug: 'rules-of-the-game', color: 0xFFFFFF * Math.random(), value: 'RULES OF THE GAME'},
+    {id: 9, slug: 'science', color: 0xFFFFFF * Math.random(), value: 'SCIENCE'},
+    {id: 10, slug: 'urbanism-cities', color: 0xFFFFFF * Math.random(), value: 'URBANISM/CITIES'},
   ],
   blocks: [
     {
       id: 0,
       links: [0, 1],
+      slug: 'the-kitchen-show',
       title: 'The Kitchen\nShow',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -28,6 +29,7 @@ export const data = {
     {
       id: 1,
       links: [0, 1],
+      slug: 'hotel-carlton',
       title: 'Hotel\nCarlton',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -37,6 +39,7 @@ export const data = {
     {
       id: 2,
       links: [0, 1, 2],
+      slug: 'safety-curtain',
       title: 'Safety\nCurtain',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -46,6 +49,7 @@ export const data = {
     {
       id: 3,
       links: [3, 4, 1],
+      slug: 'take-me-im-yours',
       title: 'Take Me\nI’m Yours',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -55,6 +59,7 @@ export const data = {
     {
       id: 4,
       links: [4, 5, 10],
+      slug: 'do-it',
       title: 'Do It',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -64,6 +69,7 @@ export const data = {
     {
       id: 5,
       links: [5, 6, 9],
+      slug: '11-rooms',
       title: '11 Rooms',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -73,6 +79,7 @@ export const data = {
     {
       id: 6,
       links: [6],
+      slug: 'indian-highway',
       title: 'Indian\nHighway',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -82,6 +89,7 @@ export const data = {
     {
       id: 7,
       links: [7, 8, 1],
+      slug: 'fun-palace',
       title: 'Fun Palace',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -91,6 +99,7 @@ export const data = {
     {
       id: 8,
       links: [8, 9, 0],
+      slug: 'to-the-moon-via-the-beach',
       title: 'To The Moon\nVia The Beach',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -100,6 +109,7 @@ export const data = {
     {
       id: 9,
       links: [9, 10],
+      slug: 'experiment-marathon',
       title: 'Experiment\nMarathon',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -109,6 +119,7 @@ export const data = {
     {
       id: 10,
       links: [10, 0],
+      slug: 'poetry-will-be-made-by-all',
       title: 'Poetry Will be\nMade By All',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -118,6 +129,7 @@ export const data = {
     {
       id: 11,
       links: [10, 1, 4, 5, 6],
+      slug: 'china-power-station',
       title: 'China Power\nStation',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',
@@ -127,6 +139,7 @@ export const data = {
     {
       id: 12,
       links: [10, 2],
+      slug: 'il-tempo-del-postino',
       title: 'Il Tempo Del\nPostino',
       body: 'Basel Switzerland, 2014',
       link: 'View Full Exhibition',

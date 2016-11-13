@@ -23,12 +23,16 @@ export default class Block extends Container {
   constructor(props) {
     super();
 
-    const { title, links, images, body, link, url, id } = props;
+    const { title, links, images, body, link, url, id, slug } = props;
 
     this.linkURL = url;
     this.blockTitle = title;
     this.links = links;
+    this.linksSlugs = [];
+    links.forEach((link) => {this.linksSlugs.push(data.types[link].slug)});
+
     this.id = id;
+    this.blockSlug = slug;
 
     this.hitTest = new Graphics();
     this.addChild(this.hitTest);
@@ -44,8 +48,6 @@ export default class Block extends Container {
     this.addLinks(links)
     this.createHitTest();
     this.addEvents();
-
-
   }
 
   addEvents() {
@@ -61,7 +63,6 @@ export default class Block extends Container {
     switch(event.type) {
       case 'click':
         if(event.target.alpha === 0) return;
-        // this.emit('click', {title: this.blockTitle});
         window.open(this.linkURL);
         break;
 
@@ -73,29 +74,50 @@ export default class Block extends Container {
           return;
         }
       case 'mouseover':
-        this.emit('over', {title: this.blockTitle});
+        this.emit('over', {blockSlug: this.blockSlug});
         this.onMouseOver();
         break;
 
       case 'mouseout':
-        // this.emit('out', {title: this.blockTitle});
         this.onMouseOut();
         break;
     }
   }
 
   onMouseOver() {
-    TweenMax.to(this.imageContainer, .5, {alpha: .35, overwrite: 'all'});
-    TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10, overwrite: 'all'});
-    TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1, overwrite: 'all'});
-    TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1, overwrite: 'all'});
+    TweenMax.killTweensOf(this.imageContainer);
+    TweenMax.killTweensOf(this.info);
+    TweenMax.killTweensOf(this.arrow);
+    TweenMax.killTweensOf(this.link);
+
+    TweenMax.to(this.imageContainer, .5, {alpha: .35});
+    TweenMax.to(this.info, .25, {alpha: 1, x: this.info.__startPos + 10});
+    TweenMax.to(this.arrow, .25, {alpha: 1, x: this.arrow.__startPos + 10, delay: .1});
+    TweenMax.to(this.link, .25, {alpha: 1, x: this.link.__startPos + 10, delay: .1});
+    this.animateImages();
   }
 
   onMouseOut() {
-    TweenMax.to(this.imageContainer, .5, {alpha: .5, overwrite: 'all'});
-    TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1, overwrite: 'all'});
-    TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos, overwrite: 'all'});
-    TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos, overwrite: 'all'});
+    TweenMax.killTweensOf(this.imageContainer);
+    TweenMax.killTweensOf(this.info);
+    TweenMax.killTweensOf(this.arrow);
+    TweenMax.killTweensOf(this.link);
+
+    TweenMax.to(this.imageContainer, .5, {alpha: .5});
+    TweenMax.to(this.info, .25, {alpha: 0, x: this.info.__startPos, delay: .1});
+    TweenMax.to(this.arrow, .25, {alpha: 0, x: this.arrow.__startPos});
+    TweenMax.to(this.link, .25, {alpha: 0, x: this.link.__startPos});
+    this.animateImages(false);
+  }
+
+  animateImages(animIn = true) {
+    this.imageContainer.children.forEach((image) => {
+      TweenMax.killTweensOf(image);
+      TweenMax.to(image.scale, .25, {
+        x: image.__scale + (!animIn ? 0 : -.015),
+        y: image.__scale + (!animIn ? 0 : -.015),
+      });
+    });
   }
 
   createHitTest() {
@@ -122,26 +144,30 @@ export default class Block extends Container {
         MAX_WIDTH / texture.width;
 
       const sprite = new Sprite(texture);
-      sprite.scale.set(IS_MOBILE() ? scale / 2 : scale );
+      sprite.__scale = IS_MOBILE() ? scale / 2 : scale;
+      sprite.pivot = new Point(sprite.width / 2, sprite.height / 2);
+      sprite.scale.x = sprite.__scale;
+      sprite.scale.y = sprite.__scale;
+      // sprite.scale.set( sprite.__scale );
 
       const pos = new Point();
 
       switch(addedImages) {
         case 0:
-          pos.x = random(5, offset);
-          pos.y = random(5, offset);
+          pos.x = sprite.width / 2 + random(5, offset);
+          pos.y = sprite.height / 2 + random(5, offset);
           // sprite.tint = 0xFF0000;
           break;
 
         case 1:
-          pos.x = lastX + lastWidth + 5 + random(0, offset);
-          pos.y = random(5, offset);
+          pos.x = lastX + lastWidth + 10 + random(0, offset);
+          pos.y = sprite.height / 2 + random(5, offset);
           // sprite.tint = 0xFFFF00;
           break;
 
         case 2:
-          pos.x = random(offset / 2, offset + 10);
-          pos.y = lastY + lastHeight + 5 + random(0, offset);
+          pos.x = sprite.width / 2 + random(offset / 2, offset + 10);
+          pos.y = lastY + lastHeight + 10 + random(0, offset);
           // sprite.tint = 0x00FF00;
           break;
       }
@@ -177,7 +203,7 @@ export default class Block extends Container {
     for (const link of links) {
       const dot = new ColorDot(
         this.id,
-        this.blockTitle,
+        this.blockSlug,
         link,
         types[link]
       );

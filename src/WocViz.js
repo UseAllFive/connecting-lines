@@ -1,9 +1,6 @@
-import dat from 'dat-gui'
 import Stats from 'stats-js'
 import attachFastClick from 'fastclick';
-import {
-  Graphics,
-  Container } from 'pixi.js/src';
+import { Graphics, Container } from 'pixi.js/src';
 import { groupBy, find, filter } from 'lodash';
 import { TweenMax, TimelineMax } from 'gsap';
 
@@ -13,16 +10,6 @@ import { loadAssets, loadFonts } from './utils/loader';
 import Renderer from './components/renderer/renderer';
 import Block from './components/block/Block';
 
-const GUI_PARAMS = function() {
-  this.lineSegments = 150;
-  this.noisePowerMin = 2.5;
-  this.noisePowerMax = 4;
-  this.strokeWidth = 0.5;
-  this.sketch = false;
-}
-
-const guiParams = new GUI_PARAMS();
-
 /**
  * @class WocViz
  * @constructor
@@ -31,11 +18,21 @@ const guiParams = new GUI_PARAMS();
 class WocViz {
 
   constructor(props) {
-    const { width, height, autoRender, forceCanvas, canvasContainer, data, showDebug, isMobile } = props;
+    const {
+      width,
+      height,
+      autoRender,
+      forceCanvas,
+      canvasContainer,
+      data,
+      showDebug,
+      onReady,
+      isMobile } = props;
 
     this.autoRender = autoRender || true;
     this.canvasContainer = canvasContainer;
     this.forceCanvas = forceCanvas || false;
+    this.onReady = onReady;
 
     setMobile(isMobile || false);
 
@@ -69,18 +66,26 @@ class WocViz {
     loadAssets(assets, assetsFolder, () => { this.onAssetsComplete() });
   }
 
+  /**
+   * @event onAssetsComplete
+   * triggered when all assets are loaded and starts the visualisation
+   */
   onAssetsComplete() {
     this.createRender();
     this.addObjects();
 
     if(DEBUG) {
       this.startStats();
-      // this.startGUI();
     }
 
+    if(this.onReady) this.onReady();
     if(this.autoRender) this.update();
   }
 
+  /**
+   * @method startStats
+   * puts the FPS meter on the page
+   */
   startStats() {
     this.stats = new Stats();
     this.stats.domElement.style.position = 'absolute';
@@ -91,9 +96,12 @@ class WocViz {
     document.body.appendChild(this.stats.domElement);
   }
 
+  /**
+   * @method createRender
+   * creates the PIXI render and the scene (Container)
+   * where all objects are placed
+   */
   createRender() {
-
-    // const { w, h } = getSize();
 
     this.renderer = new Renderer(this.forceCanvas);
     this.canvasContainer.appendChild(this.renderer.view);
@@ -107,16 +115,24 @@ class WocViz {
     this.scene.addChild(this.sceneHitTest);
   }
 
+  /**
+   * @method addEvents
+   * bind events to the Scene (Container) to hide all lines when
+   * user taps on empty scene
+   */
   addEvents() {
-    this.sceneHitTest.on(IS_MOBILE() ? 'tap' : 'click', this.hideAllLines.bind(this));
+    this.sceneHitTest.on(IS_MOBILE() ? 'tap' : 'click', this.onHideAllLines.bind(this));
   }
 
-  hideAllLines(event) {
+  /**
+   * @event hideAllLines
+   * checks if the target event is a Block and returns
+   * otherwuse, cleans the scene and tweens
+   */
+  onHideAllLines(event) {
     if(event.target instanceof Block) {
       return;
     }
-
-    TweenMax.killAll();
 
     this.hideAllOpenedBlocks();
 
@@ -128,12 +144,20 @@ class WocViz {
 
   }
 
+  /**
+   * @method hideAllOpenedBlocks
+   * Force mouseOut state for all blocks when lines are destroyed
+   */
   hideAllOpenedBlocks() {
     this.blocks.forEach((block) => {
       block.onMouseOut();
     });
   }
 
+  /**
+   * @method addObjects
+   * adds the blocks to the scene
+   */
   addObjects() {
     const { blocks } = this.data;
     this.blocks = [];
@@ -155,17 +179,35 @@ class WocViz {
 
   }
 
+  /**
+   * @event onBlockOver
+   * triggered when the block is hovered
+   * generates the lines
+   * if it's mobile, it hides the opened ones
+   */
   onBlockOver(event) {
-    this.generateLines(event.title);
+    this.generateLines(event.blockSlug);
     if(IS_MOBILE()) {
       this.hideAllOpenedBlocks();
     }
   }
 
+  /**
+   * @event onDotClick
+   * triggered when the the dots are clicked
+   * shows the lines only with the same indexType (id from data.js)
+   */
   onDotClick(event) {
-    this.generateLines(event.blockTitle, event.indexType);
+    this.generateLines(event.blockSlug, event.dotSlug);
   }
 
+  /**
+   * @method calculatePoint
+   * @param width {nunber} block width
+   * @param rowY {number} row Y position
+   * @param offset {object} x,y offset positions
+   * @param i {int} block index
+   */
   calculatePoint(width, rowY, offset, row, i) {
     offset = offset || {x: 0, y: 0};
     const { wr } = getSize();
@@ -176,6 +218,10 @@ class WocViz {
     };
   }
 
+  /**
+   * @method calculatePositionBlocks
+   * calculates the block position depending on the screen size
+   */
   calculatePositionBlocks() {
     const { wr } = getSize();
 
@@ -218,37 +264,72 @@ class WocViz {
       }
       rowY += IS_MOBILE() ? 90 : 180;
     }
-
-    // this.generateLines();
   }
 
-  showLine(block) {
-    this.generateLines(block);
-  }
-
-  generateLines(blockTitle, indexType = null) {
-
-    TweenMax.killAll();
-
+  /**
+   * @method clean
+   * clean TweenMax tweens
+   * clean lines
+   * @param cb {function} calback function to be called after the lines are destroyed, if no lines are created, just calls {cb} directly
+   */
+  clean(cb) {
     if(this.containerLines) {
-      this.containerLines.destroy(true);
-      this.scene.removeChild(this.containerLines);
-      this.containerLines = null;
+      this.timelines.forEach((t) => {
+        t.kill();
+      });
+
+      this.lines.forEach(({line}) => {
+        TweenMax.killTweensOf(line);
+      });
+
+      TweenMax.to(this.containerLines, .3, {
+        alpha: 0, onComplete: () => {
+          this.containerLines.destroy(true);
+          this.scene.removeChild(this.containerLines);
+          this.containerLines = null;
+          if(cb) cb();
+        }
+      })
+    } else {
+      if(cb) cb();
     }
+  }
+
+  /**
+   * @method generateLines
+   * first tweens lines out, destroy current objects and then generate new linns
+   * @param blockSlug {string} block slug to decide which block to start animation from
+   * @param dotSlug {string} dot slug drawn
+   */
+  generateLines(blockSlug, dotSlug = null) {
+    this.clean(() => {
+      this.calculateLines(blockSlug, dotSlug);
+    })
+  }
+
+  /**
+   * @method calculateLines
+   * calculates the lines position, curves and starts animation based on blockTitle and indexType
+   * @param slug {string} slug reference to decide which block to start animation from
+   * @param dotSlug {string} dot slug drawn
+   */
+  calculateLines(blockSlug, dotSlug = null) {
+
+    console.log(blockSlug, dotSlug);
 
     let dots = [];
     let referenceBlock = find(this.blocks, (block) => {
-      return block.blockTitle === blockTitle
+      return block.blockSlug === blockSlug
     });
 
-    if(blockTitle && !indexType) {
+    if(blockSlug && !dotSlug) {
       for (const block of this.blocks) {
         // console.log(block.links, referenceBlock.links);
         if(block === referenceBlock) {
           dots = dots.concat(block.dots);
         } else {
           for (const dot of block.dots) {
-            if(referenceBlock.links.indexOf(dot.indexType) > -1 ) {
+            if(referenceBlock.linksSlugs.indexOf(dot.dotSlug) > -1 ) {
               dots.push(dot);
             }
           }
@@ -257,7 +338,7 @@ class WocViz {
     } else {
       for (const block of this.blocks) {
         for (const dot of block.dots) {
-          if(dot.indexType === indexType) {
+          if(dot.dotSlug === dotSlug) {
             dots.push(dot);
           }
         }
@@ -265,15 +346,16 @@ class WocViz {
     }
 
     // sort dots to be the rollovered first
-    const sortedFirstDots = filter(dots, (dot) => dot.blockTitle === blockTitle);
-    const sortedLastDots = filter(dots, (dot) => dot.blockTitle !== blockTitle);
+    const sortedFirstDots = filter(dots, (dot) => dot.blockSlug === blockSlug);
+    const sortedLastDots = filter(dots, (dot) => dot.blockSlug !== blockSlug);
     const sortedDots = [].concat(sortedFirstDots).concat(sortedLastDots);
 
-    const groupDots = groupBy(sortedDots, (dot) => dot.colorId);
+    const groupDots = groupBy(sortedDots, (dot) => dot.dotSlug);
     this.containerLines = new Container();
     this.scene.addChild(this.containerLines);
 
     this.lines = [];
+    this.timelines = [];
 
     for (const group of Object.keys(groupDots)) {
       const line = new Graphics();
@@ -288,17 +370,10 @@ class WocViz {
         points.push([x, y]);
       }
 
-      // const sortedPoints = sortBy(points, (point) => {
-      //   return distance({x: points[0][0], y: points[0][1]}, {x: point[0], y: point[y]});
-      // })
-      //
-      //
-
       this.lines.push({line: line, color: color});
 
       const timeline = new TimelineMax({
         paused: true,
-        // smoothChildTiming: true,
 
         onStart: function(l, c, x, y) {
           l.moveTo(x, y);
@@ -313,6 +388,8 @@ class WocViz {
         }.bind(this, line)
 
       });
+
+      this.timelines.push(timeline);
 
       for (let i = 0; i < points.length - 1; i++) {
 
@@ -339,49 +416,16 @@ class WocViz {
               ease: 'linear',
             })
           );
-
-          // setTimeout(() => { }, 100 * counter);
-          // counter++;
         };
-
-
       }
-
       timeline.play();
-
-
-      // line.endFill();
-
-      // console.log(curvePoints);
-
-      // line.endFill();
-
     }
-
-    // TweenMax.to(this.containerLines, .5, {
-    //   alpha: 1
-    // })
-    // setMinHeight(this.scene.height + 10);
-    // this.resizeRenderer();
   }
 
-  startGUI() {
-    this.gui = new dat.GUI()
-    this.gui.domElement.style.display = DEBUG ? 'block' : 'none';
-
-    this.gui.add(guiParams, 'lineSegments', 10, 300).step(1).onChange(this.generateLines.bind(this));
-    this.gui.add(guiParams, 'noisePowerMin', 1, 25).onChange(this.generateLines.bind(this));
-    this.gui.add(guiParams, 'noisePowerMax', 1, 25).onChange(this.generateLines.bind(this));
-    this.gui.add(guiParams, 'strokeWidth', 0.1, 5).onChange(this.generateLines.bind(this));
-    this.gui.add(guiParams, 'sketch').onChange(this.generateLines.bind(this));
-
-    // let cameraFolder = this.gui.addFolder('Camera');
-    // cameraFolder.add(this.camera.position, 'x', -400, 400);
-    // cameraFolder.add(this.camera.position, 'y', -400, 400);
-    // cameraFolder.add(this.camera.position, 'z', -400, 400);
-
-  }
-
+  /**
+   * @method update
+   * render container/stage on every frame
+   */
   update() {
     if(this.stats) this.stats.begin();
 
@@ -391,10 +435,14 @@ class WocViz {
     if(this.autoRender) requestAnimationFrame(this.update.bind(this));
   }
 
+  /**
+   * @method resizeRenderer
+   * resizes the stage to the container size
+   */
   resizeRenderer() {
     this.renderer.resize(getSize().wr, Math.max(getSize().minHeight, getSize().hr));
 
-    console.log(this.renderer);
+    this.clean();
 
     this.sceneHitTest.clear();
     this.sceneHitTest.beginFill(0xFf00ff, 0);
@@ -402,13 +450,39 @@ class WocViz {
     this.sceneHitTest.endFill();
   }
 
-  /*
-  events
+  /**
+  * @summary Public API
   */
 
+  /**
+   * @method showBlockLines
+   * @param blockSlug {string} block to show based on slug
+   */
+  showBlockLines(blockSlug){
+    this.generateLines(blockSlug);
+  }
+
+  /**
+   * @method showOnlyLines
+   * @param lineSlug {string} dot slug to show
+   */
+  showOnlyLines(lineSlug) {
+    this.generateLines(null, lineSlug);
+  }
+
+  /**
+   * @event onKeyUp
+   * public onKeyUp event
+   */
   onKeyUp() {
   }
 
+  /**
+   * @event onResize
+   * event to resize the renderer based on the contaner size
+   * @param w {number} container width
+   * @param h {number} container height
+   */
   onResize(w, h) {
     w = w || window.innerWidth;
     h = h || window.innerHeight;

@@ -30,7 +30,18 @@ const app = new WocViz({
   showDebug: false,
   forceCanvas: true,
   isMobile: is_mobile,
+  onReady: onAppReady
 });
+
+/**
+ * @event onAppReady
+ * put your callback for when the assets are ready and the
+ * component is ready to render
+ */
+const onAppReady = () => {
+  // app.showBlockLines('safety-curtain');
+  // app.showOnlyLines('architecture');
+}
 
 /**
  * @method update
@@ -41,8 +52,24 @@ const app = new WocViz({
 // app.update().bind(app);
 
 /**
- * @summary
+ * @method showOnlyLines
+ * hides all lines inside the app and shows only the ones selected
+ * @param slug {string} dot slug
+ * @see data.js
+ */
+// app.showOnlyLines('architecture');
+
+/**
+ * @method showBlockLines
+ * hides all lines inside the app and shows only the ones from the selected Block slug
+ * @param slug {string} block slug to show the lines
+ * @see data.js
+ */
+// app.showBlockLines('safety-curtain');
+
+/**
+ * @event
  * add your event listeners here
  */
 window.onresize = () => { app.onResize(window.innerWidth, window.innerHeight) };
-window.onkeyup = app.onKeyUp.bind(app);
+// window.onkeyup = app.onKeyUp.bind(app);
