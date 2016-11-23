@@ -1,12 +1,6 @@
 import WocViz from './lib/index';
 import { parse } from 'query-string';
 
-/**
- * @summary
- * where all data is hardcoded
- */
-import { data } from './data-example.js';
-
 const is_mobile = parse(window.location.search) ? parse(window.location.search).mobile : false;
 
 // instantiate the viz
@@ -17,7 +11,7 @@ let app = new WocViz();
  * all properties have a default value if none is passed
  * @see lib/index.js for more info
  *
- * @param {object} data JSON or Object to use as Database
+ * @param {object} data JSON or Object to use as Database, fallsback to the hardcoded data
  * @param {number} width of the canvas
  * @param {number} height of the canvas
  * @param {boolean} autoRender whether or not to use internal loop to render the scene
@@ -27,7 +21,6 @@ let app = new WocViz();
  * @param {boolean} isMobile detect and pass if the component is rendered on mobile
  */
 app.init({
-  data,
 	width: window.innerWidth,
 	height: window.innerHeight,
   maxImageWidth: 80,
