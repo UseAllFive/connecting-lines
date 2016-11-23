@@ -5,12 +5,13 @@
   "main": "./build/woc.js",
   "scripts": {
     "test": "npm run lint",
-    "watch": "browser-sync start --files 'dist' --server 'dist' --no-notify",
-    "compile:w": "simplifyify implementation.js -w dist -d -o dist/js/bundle.js",
+    "watch": "browser-sync start --files 'test-env' --server 'test-env' --no-notify",
+    "compile:w": "simplifyify implementation.js -w test-env -d -o test-env/js/bundle.js",
     "start": "npm run compile:w & npm run watch",
     "lint": "eslint src --fix",
     "build": "browserify lib/index.js > build/woc.js",
-    "build:ugly": "browserify lib/index.js | uglifyjs -cm > dist/js/bundle.js"
+    "build:ugly": "browserify lib/index.js | uglifyjs -cm > build/woc.min.js",
+    "dist": "npm run build && npm run build:ugly"
   },
   "repository": {
     "type": "git",

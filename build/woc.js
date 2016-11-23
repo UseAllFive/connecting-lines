@@ -1095,7 +1095,7 @@ var WocViz = function () {
       this.createRender();
       this.addObjects();
 
-      if (_config.DEBUG) {
+      if (this.showDebug) {
         this.startStats();
       }
 
@@ -1114,7 +1114,7 @@ var WocViz = function () {
       this.stats = new _statsJs2.default();
       this.stats.domElement.style.position = 'absolute';
       this.stats.domElement.style.top = 0;
-      this.stats.domElement.style.display = _config.DEBUG ? 'block' : 'none';
+      this.stats.domElement.style.display = this.showDebug ? 'block' : 'none';
       this.stats.domElement.style.left = 0;
       this.stats.domElement.style.zIndex = 50;
       document.body.appendChild(this.stats.domElement);
@@ -1873,7 +1873,6 @@ var addCurveSegment = exports.addCurveSegment = function addCurveSegment(i, poin
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.DEBUG = undefined;
 exports.setMobile = setMobile;
 exports.IS_MOBILE = IS_MOBILE;
 exports.setData = setData;
@@ -1883,8 +1882,6 @@ exports.setMinHeight = setMinHeight;
 exports.getSize = getSize;
 
 var _Maths = require('./Maths');
-
-var DEBUG = exports.DEBUG = true;
 
 var SIZE = {};
 var DATA = {};
