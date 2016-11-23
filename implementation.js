@@ -10,7 +10,7 @@ import { data } from './data-example.js';
 const is_mobile = parse(window.location.search) ? parse(window.location.search).mobile : false;
 
 // instantiate the viz
-const app = new WocViz();
+let app = new WocViz();
 
 /**
  * @method init
@@ -30,6 +30,8 @@ app.init({
   data,
 	width: window.innerWidth,
 	height: window.innerHeight,
+  maxImageWidth: 80,
+  maxImageHeight: 48,
   autoRender: true,
   canvasContainer: document.body,
   showDebug: false,
@@ -37,6 +39,14 @@ app.init({
   isMobile: is_mobile,
   onReady: onAppReady
 });
+
+/**
+ * @method destroy
+ * @param {bool} destroyCanvas also remove the canvas element from dom
+ * @default true
+ */
+// app.destroy(true);
+// app = null
 
 /**
  * @event onAppReady

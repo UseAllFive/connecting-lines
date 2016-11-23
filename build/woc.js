@@ -47,6 +47,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _src = require('pixi.js/src');
 
 var _gsap = require('gsap');
@@ -74,8 +76,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var data = (0, _config.getData)();
-var MAX_HEIGHT = 120 / 2.5;
-var MAX_WIDTH = 200 / 2.5;
 
 var Block = function (_Container) {
   _inherits(Block, _Container);
@@ -89,7 +89,7 @@ var Block = function (_Container) {
    * @param link
    * @param url
    */
-  function Block(props) {
+  function Block(props, maxImageWidth, maxImageHeight) {
     _classCallCheck(this, Block);
 
     var _this = _possibleConstructorReturn(this, (Block.__proto__ || Object.getPrototypeOf(Block)).call(this));
@@ -103,6 +103,9 @@ var Block = function (_Container) {
         id = props.id,
         slug = props.slug;
 
+
+    _this.maxImageWidth = maxImageWidth;
+    _this.maxImageHeight = maxImageHeight;
 
     _this.linkURL = url;
     _this.blockTitle = title;
@@ -133,10 +136,15 @@ var Block = function (_Container) {
   }
 
   _createClass(Block, [{
-    key: 'addEvents',
-    value: function addEvents() {
-      this.buttonMode = true;
-      this.interactive = true;
+    key: 'destroy',
+    value: function destroy(val) {
+      this.linksSlugs = null;
+
+      _gsap.TweenMax.killTweensOf(this.imageContainer);
+      _gsap.TweenMax.killTweensOf(this.info);
+      _gsap.TweenMax.killTweensOf(this.arrow);
+      _gsap.TweenMax.killTweensOf(this.link);
+
       var events = (0, _config.IS_MOBILE)() ? ['tap'] : ['mouseover', 'mouseout'];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -146,7 +154,7 @@ var Block = function (_Container) {
         for (var _iterator = events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var event = _step.value;
 
-          this.on(event, this.eventHandler.bind(this));
+          this.off(event, this.eventHandler.bind(this));
         }
       } catch (err) {
         _didIteratorError = true;
@@ -159,6 +167,97 @@ var Block = function (_Container) {
         } finally {
           if (_didIteratorError) {
             throw _iteratorError;
+          }
+        }
+      }
+
+      this.imageContainer.children.forEach(function (child) {
+        _gsap.TweenMax.killTweensOf(child);
+        child.destroy(true);
+      });
+
+      this.imageContainer.destroy(true);
+      this.imageContainer = null;
+
+      this.buttonMode = false;
+      this.interactive = false;
+
+      this.dots.forEach(function (dot) {
+        return dot.destroy(true);
+      });
+      this.dots = null;
+
+      this.title.destroy(true);
+      this.info.destroy(true);
+
+      this.link.interactive = false;
+      events = ['click', 'tap'];
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = events[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _event = _step2.value;
+
+          this.link.off(_event, this.eventHandler.bind(this));
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      this.link.destroy(true);
+      this.arrow.destroy(true);
+
+      this.title = null;
+      this.info = null;
+      this.link = null;
+      this.arrow = null;
+
+      this.children.forEach(function (child) {
+        return child.destroy(true);
+      });
+
+      _get(Block.prototype.__proto__ || Object.getPrototypeOf(Block.prototype), 'destroy', this).call(this, val);
+    }
+  }, {
+    key: 'addEvents',
+    value: function addEvents() {
+      this.buttonMode = true;
+      this.interactive = true;
+      var events = (0, _config.IS_MOBILE)() ? ['tap'] : ['mouseover', 'mouseout'];
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = events[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var event = _step3.value;
+
+          this.on(event, this.eventHandler.bind(this));
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
@@ -248,18 +347,18 @@ var Block = function (_Container) {
       var lastY = 0;
       var offset = (0, _config.IS_MOBILE)() ? 5 : 15;
 
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator2 = images[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var asset = _step2.value;
+        for (var _iterator4 = images[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var asset = _step4.value;
           var texture = _src.loader.resources[asset].texture;
 
 
           var isPortrait = texture.width < texture.height;
-          var scale = isPortrait ? MAX_HEIGHT / texture.height : MAX_WIDTH / texture.width;
+          var scale = isPortrait ? this.maxImageHeight / texture.height : this.maxImageWidth / texture.width;
 
           var sprite = new _src.Sprite(texture);
           sprite.__scale = (0, _config.IS_MOBILE)() ? scale / 2 : scale;
@@ -307,16 +406,16 @@ var Block = function (_Container) {
           }
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
           }
         } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
+          if (_didIteratorError4) {
+            throw _iteratorError4;
           }
         }
       }
@@ -336,13 +435,13 @@ var Block = function (_Container) {
       var row = -1;
       var col = 0;
       var offset = (0, _config.IS_MOBILE)() ? 3.5 : 7;
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator3 = links[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var link = _step3.value;
+        for (var _iterator5 = links[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var link = _step5.value;
 
           var dot = new _ColorDot2.default(this.id, this.blockSlug, link, types[link]);
           dot.position.x = col % 2 * offset;
@@ -360,16 +459,16 @@ var Block = function (_Container) {
           this.linksContainer.addChild(dot);
         }
       } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3.return) {
-            _iterator3.return();
+          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+            _iterator5.return();
           }
         } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
+          if (_didIteratorError5) {
+            throw _iteratorError5;
           }
         }
       }
@@ -409,27 +508,27 @@ var Block = function (_Container) {
       this.link.buttonMode = true;
       this.link.interactive = true;
       var events = ['click', 'tap'];
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
 
       try {
-        for (var _iterator4 = events[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var event = _step4.value;
+        for (var _iterator6 = events[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var event = _step6.value;
 
           this.link.on(event, this.eventHandler.bind(this));
         }
       } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
+          if (!_iteratorNormalCompletion6 && _iterator6.return) {
+            _iterator6.return();
           }
         } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
+          if (_didIteratorError6) {
+            throw _iteratorError6;
           }
         }
       }
@@ -463,6 +562,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 var _src = require('pixi.js/src');
 
@@ -505,10 +606,10 @@ var ColorDot = function (_Graphics) {
   }
 
   _createClass(ColorDot, [{
-    key: 'addEvents',
-    value: function addEvents() {
-      this.buttonMode = true;
-      this.interactive = true;
+    key: 'destroy',
+    value: function destroy(val) {
+      this.buttonMode = false;
+      this.interactive = false;
       var events = ['tap', 'click'];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -518,7 +619,7 @@ var ColorDot = function (_Graphics) {
         for (var _iterator = events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var event = _step.value;
 
-          this.on(event, this.eventHandler.bind(this));
+          this.off(event, this.eventHandler.bind(this));
         }
       } catch (err) {
         _didIteratorError = true;
@@ -531,6 +632,39 @@ var ColorDot = function (_Graphics) {
         } finally {
           if (_didIteratorError) {
             throw _iteratorError;
+          }
+        }
+      }
+
+      _get(ColorDot.prototype.__proto__ || Object.getPrototypeOf(ColorDot.prototype), 'destroy', this).call(this, val);
+    }
+  }, {
+    key: 'addEvents',
+    value: function addEvents() {
+      this.buttonMode = true;
+      this.interactive = true;
+      var events = ['tap', 'click'];
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = events[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var event = _step2.value;
+
+          this.on(event, this.eventHandler.bind(this));
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
           }
         }
       }
@@ -841,6 +975,8 @@ var WocViz = function () {
           autoRender = props.autoRender,
           forceCanvas = props.forceCanvas,
           canvasContainer = props.canvasContainer,
+          maxImageWidth = props.maxImageWidth,
+          maxImageHeight = props.maxImageHeight,
           data = props.data,
           showDebug = props.showDebug,
           onReady = props.onReady,
@@ -851,6 +987,9 @@ var WocViz = function () {
       this.canvasContainer = canvasContainer || document.body;
       this.forceCanvas = forceCanvas || true;
       this.onReady = onReady;
+
+      this.maxImageWidth = maxImageWidth || 80;
+      this.maxImageHeight = maxImageHeight || 48;
 
       (0, _config.setMobile)(isMobile || false);
 
@@ -883,6 +1022,66 @@ var WocViz = function () {
       (0, _loader.loadAssets)(assets, assetsFolder, function () {
         _this.onAssetsComplete();
       });
+    }
+
+    /**
+     * @method destroy
+     * @param {bool} destroyCanvas also remove the canvas element from dom
+     */
+
+  }, {
+    key: 'destroy',
+    value: function destroy() {
+      var destroyCanvas = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+
+      document.body.removeChild(this.stats.domElement);
+      this.stats = null;
+
+      this.blocks.forEach(function (block) {
+        block.destroy(true);
+        block = null;
+      });
+
+      this.blocks = null;
+      this.rows = null;
+
+      if (this.timelines) {
+        this.timelines.forEach(function (t) {
+          t.kill();
+          t = null;
+        });
+      }
+
+      if (this.lines) {
+        this.lines.forEach(function (_ref) {
+          var line = _ref.line;
+
+          _gsap.TweenMax.killTweensOf(line);
+        });
+      }
+
+      this.lines = null;
+      this.timelines = null;
+
+      if (this.containerLines) {
+        _gsap.TweenMax.killTweensOf(this.containerLines);
+        this.containerLines.destroy(true);
+      }
+      if (this.sceneHitTest) this.sceneHitTest.destroy(true);
+      if (this.containerLines) this.containerLines.destroy(true);
+
+      this.containerLines = null;
+      this.sceneHitTest = null;
+
+      (0, _loader.destroyLoader)();
+
+      this.scene.destroy(true);
+      this.scene = null;
+      this.renderer.plugins.interaction.destroy();
+      this.renderer.destroy(destroyCanvas);
+      if (this.raf) cancelAnimationFrame(this.raf);
+      this.raf = null;
     }
 
     /**
@@ -1011,7 +1210,7 @@ var WocViz = function () {
         for (var _iterator = blocks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var blockData = _step.value;
 
-          var block = new _Block2.default(blockData);
+          var block = new _Block2.default(blockData, this.maxImageWidth, this.maxImageHeight);
           block.on('over', this.onBlockOver.bind(this));
           block.on('clickDot', this.onDotClick.bind(this));
           this.blocks.push(block);
@@ -1180,8 +1379,8 @@ var WocViz = function () {
           t.kill();
         });
 
-        this.lines.forEach(function (_ref) {
-          var line = _ref.line;
+        this.lines.forEach(function (_ref2) {
+          var line = _ref2.line;
 
           _gsap.TweenMax.killTweensOf(line);
         });
@@ -1486,7 +1685,7 @@ var WocViz = function () {
       this.renderer.render(this.scene);
 
       if (this.stats) this.stats.end();
-      if (this.autoRender) requestAnimationFrame(this.update.bind(this));
+      if (this.autoRender) this.raf = requestAnimationFrame(this.update.bind(this));
     }
 
     /**
@@ -1573,6 +1772,9 @@ var WocViz = function () {
 }();
 
 exports.default = WocViz;
+
+
+window.WocViz = WocViz; // eslint-disable-line
 
 },{"./components/block/Block":2,"./components/renderer/renderer":5,"./data/data.js":6,"./utils/Maths":8,"./utils/config":9,"./utils/loader":10,"fastclick":15,"gsap":16,"lodash":18,"pixi.js/src":143,"stats-js":185}],8:[function(require,module,exports){
 'use strict';
@@ -1746,11 +1948,15 @@ function getSize() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.loadAssets = exports.loadFonts = undefined;
+exports.destroyLoader = exports.loadAssets = exports.loadFonts = undefined;
 
 var _src = require('pixi.js/src');
 
+var spans = [];
+var mainContainer = null;
+
 var loadFonts = exports.loadFonts = function loadFonts(fonts, container) {
+  mainContainer = container;
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
   var _iteratorError = undefined;
@@ -1766,6 +1972,7 @@ var loadFonts = exports.loadFonts = function loadFonts(fonts, container) {
       span.style.top = 0;
       span.style.left = 0;
       span.style['pointer-events'] = 'none';
+      spans.push(span);
       container.appendChild(span);
     }
   } catch (err) {
@@ -1817,6 +2024,22 @@ var loadAssets = exports.loadAssets = function loadAssets(assets, assetsFolder, 
 
   _src.loader.once('complete', callback);
   _src.loader.load();
+};
+
+var destroyLoader = exports.destroyLoader = function destroyLoader() {
+  spans.forEach(function (span) {
+    mainContainer.removeChild(span);
+    span = null;
+  });
+  spans = null;
+  for (var asset in _src.loader.resources) {
+    if (_src.loader.resources.hasOwnProperty(asset)) {
+      _src.loader.resources[asset].texture.destroy(true);
+      _src.loader.resources[asset] = null;
+    }
+  }
+
+  _src.loader.resources = null;
 };
 
 },{"pixi.js/src":143}],11:[function(require,module,exports){

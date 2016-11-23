@@ -1,8 +1,8 @@
 {
   "name": "woc",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "woc visualisation module",
-  "main": "build/woc.js",
+  "main": "./build/woc.js",
   "scripts": {
     "test": "npm run lint",
     "watch": "browser-sync start --files 'dist' --server 'dist' --no-notify",
