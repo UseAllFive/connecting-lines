@@ -1,14 +1,22 @@
-import WocViz from './WocViz';
+import WocViz from './lib/index';
 import { parse } from 'query-string';
 
 /**
  * @summary
  * where all data is hardcoded
  */
-import { data } from './data.js';
+import { data } from './data-example.js';
+
+const is_mobile = parse(window.location.search) ? parse(window.location.search).mobile : false;
+
+// instantiate the viz
+const app = new WocViz();
 
 /**
- * @type {WocViz}
+ * @method init
+ * all properties have a default value if none is passed
+ * @see lib/index.js for more info
+ *
  * @param {object} data JSON or Object to use as Database
  * @param {number} width of the canvas
  * @param {number} height of the canvas
@@ -18,10 +26,7 @@ import { data } from './data.js';
  * @param {boolean} forceCanvas force the 2d Context over letting the system decide whether to use WebGL or not
  * @param {boolean} isMobile detect and pass if the component is rendered on mobile
  */
-
-const is_mobile = parse(window.location.search) ? parse(window.location.search).mobile : false;
-
-const app = new WocViz({
+app.init({
   data,
 	width: window.innerWidth,
 	height: window.innerHeight,

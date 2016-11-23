@@ -1,0 +1,23 @@
+{
+  "name": "woc",
+  "description": "woc visualisation module",
+  "main": "lib/index.js",
+  "authors": [
+    "Silvio Paganini"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "woc",
+    "visualisation",
+    "useallfive"
+  ],
+  "homepage": "https://github.com/silviopaganini/useallfive-wocviz",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
