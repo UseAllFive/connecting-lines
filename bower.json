@@ -1,7 +1,7 @@
 {
   "name": "woc",
   "description": "woc visualisation module",
-  "main": "lib/index.js",
+  "main": "build/woc.js",
   "authors": [
     "Silvio Paganini"
   ],
