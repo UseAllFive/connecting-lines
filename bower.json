@@ -21,6 +21,6 @@
     "tests",
     "test-env",
     "implementation.js",
-    "lib",
+    "lib"
   ]
 }
