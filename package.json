@@ -1,6 +1,6 @@
 {
   "name": "woc",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "woc visualisation module",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "compile:w": "simplifyify implementation.js -w dist -d -o dist/js/bundle.js",
     "start": "npm run compile:w & npm run watch",
     "lint": "eslint src --fix",
-    "build": "browserify implementation.js | uglifyjs -cm > dist/js/bundle.js"
+    "build": "browserify lib/index.js > build/woc.js",
+    "build:ugly": "browserify lib/index.js | uglifyjs -cm > dist/js/bundle.js"
   },
   "repository": {
     "type": "git",

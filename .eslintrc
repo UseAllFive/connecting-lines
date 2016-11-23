@@ -33,6 +33,8 @@
   "settings": {
     "import/ignore": [
       "jspm_packages",
+      "build",
+      "dist",
       "node_modules",
       ".(scss|less|css)$",
       ".[^js(x)?]+$"
