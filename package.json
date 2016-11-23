@@ -1,6 +1,6 @@
 {
   "name": "woc",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "woc visualisation module",
   "main": "./build/woc.js",
   "scripts": {
