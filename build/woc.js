@@ -109,9 +109,9 @@ var Block = function (_Container) {
 
     _this.linkURL = url;
     _this.blockTitle = title;
-    _this.links = links;
+    _this.links = links || [];
     _this.linksSlugs = [];
-    links.forEach(function (link) {
+    _this.links.forEach(function (link) {
       _this.linksSlugs.push(data.types[link].slug);
     });
 
@@ -124,8 +124,6 @@ var Block = function (_Container) {
     _this.imageContainer = new _src.Container();
     _this.imageContainer.alpha = .5;
     _this.addChild(_this.imageContainer);
-
-    _this.maxWidthBlock = 0;
 
     _this.addImages(images);
     _this.addInformation(title, body, link, url);
@@ -334,17 +332,13 @@ var Block = function (_Container) {
     value: function createHitTest() {
       this.hitTest.clear();
       this.hitTest.beginFill(0xFf00ff, 0);
-      this.hitTest.drawRect(0, 0, this.maxWidthBlock, this.height);
+      this.hitTest.drawRect(0, 0, this.width, this.height);
       this.hitTest.endFill();
     }
   }, {
     key: 'addImages',
     value: function addImages(images) {
       var addedImages = 0;
-      var lastWidth = 0;
-      var lastHeight = 0;
-      var lastX = 0;
-      var lastY = 0;
       var offset = (0, _config.IS_MOBILE)() ? 5 : 15;
 
       var _iteratorNormalCompletion4 = true;
@@ -373,34 +367,30 @@ var Block = function (_Container) {
             case 0:
               pos.x = sprite.width / 2 + (0, _Maths.random)(5, offset);
               pos.y = sprite.height / 2 + (0, _Maths.random)(5, offset);
-              // sprite.tint = 0xFF0000;
+              sprite.tint = 0xFF0000;
               break;
 
             case 1:
-              pos.x = lastX + lastWidth + 10 + (0, _Maths.random)(0, offset);
+              pos.x = this.imageContainer.width + sprite.width / 2 + 10 + (0, _Maths.random)(5, offset);
               pos.y = sprite.height / 2 + (0, _Maths.random)(5, offset);
-              // sprite.tint = 0xFFFF00;
+              sprite.tint = 0xFFFF00;
               break;
 
             case 2:
               pos.x = sprite.width / 2 + (0, _Maths.random)(offset / 2, offset + 10);
-              pos.y = lastY + lastHeight + 10 + (0, _Maths.random)(0, offset);
-              // sprite.tint = 0x00FF00;
+              pos.y = this.imageContainer.height + sprite.height / 2 + 10 + (0, _Maths.random)(0, offset);
+              sprite.tint = 0x00FF00;
               break;
           }
 
           addedImages++;
 
-          sprite.x = lastX = pos.x;
-          sprite.y = lastY = pos.y;
+          sprite.x = pos.x;
+          sprite.y = pos.y;
 
           this.imageContainer.addChild(sprite);
 
-          lastWidth = Math.max(lastWidth, sprite.width);
-          lastHeight = Math.max(lastHeight, sprite.height);
-
-          this.maxWidthBlock = Math.max(this.maxWidthBlock, lastX + lastWidth);
-
+          // breaks after 1 image added on mobile
           if ((0, _config.IS_MOBILE)()) {
             break;
           }
@@ -435,6 +425,9 @@ var Block = function (_Container) {
       var row = -1;
       var col = 0;
       var offset = (0, _config.IS_MOBILE)() ? 3.5 : 7;
+
+      if (!links) return;
+
       var _iteratorNormalCompletion5 = true;
       var _didIteratorError5 = false;
       var _iteratorError5 = undefined;
@@ -485,7 +478,6 @@ var Block = function (_Container) {
       // this.title.resolution = window.devicePixelRatio;
       this.title.position.x = (0, _config.IS_MOBILE)() ? 7 : 15;
       this.addChild(this.title);
-      this.maxWidthBlock = Math.max(this.maxWidthBlock, this.title.width + this.title.position.x);
 
       this.info = new _src.Text(info, (0, _config.IS_MOBILE)() ? _styles.styleInfoMobile : _styles.styleInfo);
       // this.info.resolution = window.devicePixelRatio;
@@ -494,7 +486,6 @@ var Block = function (_Container) {
       this.info.position.y = this.title.height + offset;
       this.info.__startPos = this.info.position.x;
       this.addChild(this.info);
-      this.maxWidthBlock = Math.max(this.maxWidthBlock, this.info.width + this.info.position.x);
 
       this.link = new _src.Text(linkCopy.toUpperCase(), (0, _config.IS_MOBILE)() ? _styles.styleLinkMobile : _styles.styleLink);
       // this.link.resolution = window.devicePixelRatio;
@@ -503,7 +494,6 @@ var Block = function (_Container) {
       this.link.position.y = this.info.position.y + this.info.height + ((0, _config.IS_MOBILE)() ? offset : offset + 3);
       this.link.__startPos = this.link.position.x;
       this.addChild(this.link);
-      this.maxWidthBlock = Math.max(this.maxWidthBlock, this.link.width + this.link.__startPos + 10);
 
       this.link.buttonMode = true;
       this.link.interactive = true;
@@ -540,7 +530,6 @@ var Block = function (_Container) {
       this.arrow.position.y = this.link.position.y + this.arrow.height / 2;
       this.arrow.__startPos = this.arrow.position.x;
       this.addChild(this.arrow);
-      this.maxWidthBlock = Math.max(this.maxWidthBlock, this.arrow.width + this.arrow.__startPos + 10);
     }
   }, {
     key: 'updateTitle',
@@ -786,7 +775,7 @@ var data = exports.data = {
   types: [{ id: 0, slug: 'architecture', color: 0x3440FB, value: 'ARCHITECTURE' }, { id: 1, slug: 'beyond-museums', color: 0x9B4AB5, value: 'BEYOND MUSEUMS' }, { id: 2, slug: 'fun-palace', color: 0x67B2DC, value: 'FUN PALACE' }, { id: 3, slug: 'globalization', color: 0x9DDE61, value: 'GLOBALIZATION' }, { id: 4, slug: 'instruction-based', color: 0xFD6CE8, value: 'INSTRUCTION-BASED ART' }, { id: 5, slug: 'literature', color: 0xFC2B1C, value: 'LITERATURE' }, { id: 6, slug: 'live-art', color: 0xEFCF43, value: 'LIVE ART' }, { id: 7, slug: 'protest-against-forgetting', color: 0xFCA747, value: 'PROTEST AGAINST FORGETTING' }, { id: 8, slug: 'rules-of-the-game', color: 0xFFFFFF * Math.random(), value: 'RULES OF THE GAME' }, { id: 9, slug: 'science', color: 0xFFFFFF * Math.random(), value: 'SCIENCE' }, { id: 10, slug: 'urbanism-cities', color: 0xFFFFFF * Math.random(), value: 'URBANISM/CITIES' }],
   blocks: [{
     id: 0,
-    links: [0, 1],
+    links: null,
     slug: 'the-kitchen-show',
     title: 'The Kitchen\nShow',
     body: 'Basel Switzerland, 2014',
@@ -979,6 +968,7 @@ var WocViz = function () {
           maxImageHeight = props.maxImageHeight,
           data = props.data,
           showDebug = props.showDebug,
+          animationTimingMultiplier = props.animationTimingMultiplier,
           onReady = props.onReady,
           isMobile = props.isMobile;
 
@@ -987,6 +977,7 @@ var WocViz = function () {
       this.canvasContainer = canvasContainer || document.body;
       this.forceCanvas = forceCanvas || true;
       this.onReady = onReady;
+      this.animationTimingMultiplier = animationTimingMultiplier || .6;
 
       this.maxImageWidth = maxImageWidth || 80;
       this.maxImageHeight = maxImageHeight || 48;
@@ -1333,18 +1324,20 @@ var WocViz = function () {
         for (var _iterator2 = this.rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var row = _step2.value;
 
+          var rowHeight = 0;
           for (var i = 0; i < row; i++) {
             if (index >= this.blocks.length) {
               break;
             }
             var block = this.blocks[index];
-            var offset = { x: 10, y: rowY === 0 ? 30 : 0 };
+            var offset = { x: 10, y: (0, _config.IS_MOBILE)() ? 15 : 30 };
             var point = this.calculatePoint(block.width, rowY, offset, row, i);
             block.x = point.x;
             block.y = point.y;
             index++;
+            rowHeight = Math.max(rowHeight, block.height + offset.y);
           }
-          rowY += (0, _config.IS_MOBILE)() ? 90 : 180;
+          rowY += rowHeight;
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -1387,7 +1380,7 @@ var WocViz = function () {
 
         _gsap.TweenMax.to(this.containerLines, .3, {
           alpha: 0, onComplete: function onComplete() {
-            _this2.containerLines.destroy(true);
+            if (_this2.containerLines) _this2.containerLines.destroy(true);
             _this2.scene.removeChild(_this2.containerLines);
             _this2.containerLines = null;
             if (cb) cb();
@@ -1636,7 +1629,7 @@ var WocViz = function () {
                 y: j === 0 ? points[i][1] : curvePoints[j - 1].y
               };
 
-              var time = 1 / curvePoints.length * .6;
+              var time = 1 / curvePoints.length * _this4.animationTimingMultiplier;
               timeline.add(_gsap.TweenMax.to(objRef, time, {
                 x: curvePoints[j].x,
                 y: curvePoints[j].y,

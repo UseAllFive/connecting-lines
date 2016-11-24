@@ -23,8 +23,9 @@ let app = new WocViz();
 app.init({
 	width: window.innerWidth,
 	height: window.innerHeight,
-  maxImageWidth: 80,
-  maxImageHeight: 48,
+  maxImageWidth: 200,
+  maxImageHeight: 200,
+  animationTimingMultiplier: 1.1,
   autoRender: true,
   canvasContainer: document.body,
   showDebug: false,
