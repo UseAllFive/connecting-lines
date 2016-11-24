@@ -367,19 +367,19 @@ var Block = function (_Container) {
             case 0:
               pos.x = sprite.width / 2 + (0, _Maths.random)(5, offset);
               pos.y = sprite.height / 2 + (0, _Maths.random)(5, offset);
-              sprite.tint = 0xFF0000;
+              // sprite.tint = 0xFF0000;
               break;
 
             case 1:
               pos.x = this.imageContainer.width + sprite.width / 2 + 10 + (0, _Maths.random)(5, offset);
               pos.y = sprite.height / 2 + (0, _Maths.random)(5, offset);
-              sprite.tint = 0xFFFF00;
+              // sprite.tint = 0xFFFF00;
               break;
 
             case 2:
               pos.x = sprite.width / 2 + (0, _Maths.random)(offset / 2, offset + 10);
               pos.y = this.imageContainer.height + sprite.height / 2 + 10 + (0, _Maths.random)(0, offset);
-              sprite.tint = 0x00FF00;
+              // sprite.tint = 0x00FF00;
               break;
           }
 
