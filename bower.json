@@ -1,11 +1,12 @@
 {
-  "name": "woc",
-  "description": "woc visualisation module",
+  "name": "connecting-lines",
+  "description": "connecting-lines visualisation module",
   "main": "build/woc.js",
   "authors": [
-    "Silvio Paganini"
+    "Silvio Paganini",
+    "Use all Five"
   ],
-  "license": "ISC",
+  "license": "MIT",
   "keywords": [
     "woc",
     "visualisation",
