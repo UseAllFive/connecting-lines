@@ -1,6 +1,6 @@
 {
   "name": "connecting-lines",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "connecting-lines visualisation module",
   "main": "./build/connecting-lines.js",
   "scripts": {
