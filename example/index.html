@@ -1,6 +1,6 @@
 <html>
-<script src="bower_components/connecting-lines/build/woc.js"></script>
-<!--<script src="bower_components/woc/build/woc.min.js"></script>-->
+<script src="bower_components/connecting-lines/build/connecting-lines.js"></script>
+<!--<script src="bower_components/connecting-lines/build/connecting-lines.min.js"></script>-->
 
 <!-- DONT FORGET TO ADD THE FONTS -->
 <link rel="stylesheet" type="text/css" href="css/fonts.css">
@@ -401,8 +401,19 @@ app.init({
   data: data,
   width: window.innerWidth,
 	height: window.innerHeight,
-  maxImageWidth: 80,
-  maxImageHeight: 48,
+  maxImageWidth: 200,
+  maxImageHeight: 200,
+  fontSizes: {
+    title: 30,
+    titleMobile: 18,
+    info: 20,
+    infoMobile: 11,
+    link: 16,
+    linkMobile: 9,
+  },
+  arrowSizeMobile: .8,
+  animationTimingMultiplier: 1.1,
+  arrowSize: 1.2,
   autoRender: true,
   canvasContainer: document.querySelector('#canvasContainer'),
   showDebug: false,
