@@ -10,7 +10,7 @@ npm start
 ### Implementation
 
 ```
-bower i woc-viz --save
+bower i connecting-lines --save
 python -m SimpleHTTPServer 8000 # start a dev server to test
 ```
 
