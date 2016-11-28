@@ -25,6 +25,16 @@ app.init({
 	height: window.innerHeight,
   maxImageWidth: 200,
   maxImageHeight: 200,
+  fontSizes: {
+    title: 30,
+    titleMobile: 18,
+    info: 20,
+    infoMobile: 11,
+    link: 16,
+    linkMobile: 9,
+  },
+  arrowSizeMobile: .8,
+  arrowSize: 1.2,
   animationTimingMultiplier: 1.1,
   autoRender: true,
   canvasContainer: document.body,
@@ -50,6 +60,10 @@ app.init({
 const onAppReady = () => {
   // app.showBlockLines('safety-curtain');
   // app.showOnlyLines('architecture');
+}
+
+window.destroy = () => {
+  app.destroy();
 }
 
 /**
