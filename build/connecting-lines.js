@@ -125,6 +125,8 @@ var Block = function (_Container) {
     _this.imageContainer.alpha = .5;
     _this.addChild(_this.imageContainer);
 
+    _this.callbackRef = _this.eventHandler.bind(_this);
+
     _this.addImages(images);
     _this.addInformation(title, body, link, url);
     _this.addLinks(links);
@@ -152,7 +154,7 @@ var Block = function (_Container) {
         for (var _iterator = events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var event = _step.value;
 
-          this.off(event, this.eventHandler.bind(this));
+          this.off(event, this.callbackRef);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -198,7 +200,7 @@ var Block = function (_Container) {
         for (var _iterator2 = events[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var _event = _step2.value;
 
-          this.link.off(_event, this.eventHandler.bind(this));
+          this.link.off(_event, this.callbackRef);
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -243,7 +245,7 @@ var Block = function (_Container) {
         for (var _iterator3 = events[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
           var event = _step3.value;
 
-          this.on(event, this.eventHandler.bind(this));
+          this.on(event, this.callbackRef);
         }
       } catch (err) {
         _didIteratorError3 = true;
@@ -266,7 +268,7 @@ var Block = function (_Container) {
       switch (event.type) {
         case 'click':
           if (event.target.alpha === 0) return;
-          window.open(this.linkURL);
+          this.emit('clickedLink', this.blockSlug);
           break;
 
         case 'tap':
@@ -506,7 +508,7 @@ var Block = function (_Container) {
         for (var _iterator6 = events[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
           var event = _step6.value;
 
-          this.link.on(event, this.eventHandler.bind(this));
+          this.link.on(event, this.callbackRef);
         }
       } catch (err) {
         _didIteratorError6 = true;
@@ -989,13 +991,15 @@ var WocViz = function () {
           showDebug = props.showDebug,
           animationTimingMultiplier = props.animationTimingMultiplier,
           onReady = props.onReady,
+          onLinkClick = props.onLinkClick,
           isMobile = props.isMobile;
 
 
       this.autoRender = autoRender || true;
       this.canvasContainer = canvasContainer || document.body;
-      this.forceCanvas = forceCanvas || true;
+      this.forceCanvas = forceCanvas;
       this.onReady = onReady;
+      this.onLinkClick = onLinkClick || function () {};
       this.animationTimingMultiplier = animationTimingMultiplier || .6;
 
       this.maxImageWidth = maxImageWidth || 200;
@@ -1068,6 +1072,8 @@ var WocViz = function () {
       var destroyCanvas = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
 
+      this.sceneHitTest.off((0, _config.IS_MOBILE)() ? 'tap' : 'click', this.refOnHideAllLines);
+
       if (this.stats) document.body.removeChild(this.stats.domElement);
       this.stats = null;
 
@@ -1111,7 +1117,6 @@ var WocViz = function () {
 
       this.scene.destroy(true);
       this.scene = null;
-      this.renderer.plugins.interaction.destroy();
       this.renderer.destroy(destroyCanvas);
       if (this.raf) cancelAnimationFrame(this.raf);
       this.raf = null;
@@ -1183,7 +1188,8 @@ var WocViz = function () {
   }, {
     key: 'addEvents',
     value: function addEvents() {
-      this.sceneHitTest.on((0, _config.IS_MOBILE)() ? 'tap' : 'click', this.onHideAllLines.bind(this));
+      this.refOnHideAllLines = this.onHideAllLines.bind(this);
+      this.sceneHitTest.on((0, _config.IS_MOBILE)() ? 'tap' : 'click', this.refOnHideAllLines);
     }
 
     /**
@@ -1233,6 +1239,10 @@ var WocViz = function () {
 
       this.blocks = [];
       this.maxWidthBlock = 0;
+      this.callbackRefs = {
+        'over': this.onBlockOver.bind(this),
+        'clickDot': this.onDotClick.bind(this)
+      };
 
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -1243,8 +1253,10 @@ var WocViz = function () {
           var blockData = _step.value;
 
           var block = new _Block2.default(blockData, this.maxImageWidth, this.maxImageHeight);
-          block.on('over', this.onBlockOver.bind(this));
-          block.on('clickDot', this.onDotClick.bind(this));
+          block.on('over', this.callbackRefs['over']);
+          block.on('clickDot', this.callbackRefs['clickDot']);
+          block.on('clickedLink', this.onLinkClick);
+
           this.blocks.push(block);
           this.scene.addChild(block);
           this.maxWidthBlock = (0, _Maths.round)(Math.max(this.maxWidthBlock, block.width));
@@ -1371,7 +1383,7 @@ var WocViz = function () {
               break;
             }
             var block = this.blocks[index];
-            var offset = { x: 10, y: (0, _config.IS_MOBILE)() ? 15 : 30 };
+            var offset = { x: 15, y: (0, _config.IS_MOBILE)() ? 15 : 30 };
             var point = this.calculatePoint(block.width, rowY, offset, row, i);
             block.x = point.x;
             block.y = point.y;
@@ -1397,6 +1409,20 @@ var WocViz = function () {
     }
 
     /**
+     * @method startReferences
+     * starts arrays where objects are stored
+     */
+
+  }, {
+    key: 'startReferences',
+    value: function startReferences() {
+      this.containerLines = new _src.Container();
+      this.scene.addChild(this.containerLines);
+      this.lines = [];
+      this.timelines = [];
+    }
+
+    /**
      * @method clean
      * clean TweenMax tweens
      * clean lines
@@ -1409,25 +1435,33 @@ var WocViz = function () {
       var _this2 = this;
 
       if (this.containerLines) {
-        this.timelines.forEach(function (t) {
+        if (this.timelines) this.timelines.forEach(function (t) {
           t.kill();
         });
 
-        this.lines.forEach(function (_ref2) {
+        if (this.lines) this.lines.forEach(function (_ref2) {
           var line = _ref2.line;
 
           _gsap.TweenMax.killTweensOf(line);
         });
 
-        _gsap.TweenMax.to(this.containerLines, .3, {
-          alpha: 0, onComplete: function onComplete() {
-            if (_this2.containerLines) _this2.containerLines.destroy(true);
-            _this2.scene.removeChild(_this2.containerLines);
-            _this2.containerLines = null;
-            if (cb) cb();
-          }
-        });
+        if (this.containerLines) {
+          _gsap.TweenMax.to(this.containerLines, .3, {
+            alpha: 0, onComplete: function onComplete() {
+              if (_this2.containerLines) _this2.containerLines.destroy(true);
+              _this2.scene.removeChild(_this2.containerLines);
+              _this2.containerLines = null;
+
+              _this2.startReferences();
+              if (cb) cb();
+            }
+          });
+        } else {
+          this.startReferences();
+          if (cb) cb();
+        }
       } else {
+        this.startReferences();
         if (cb) cb();
       }
     }
@@ -1589,11 +1623,6 @@ var WocViz = function () {
       var groupDots = (0, _lodash.groupBy)(sortedDots, function (dot) {
         return dot.dotSlug;
       });
-      this.containerLines = new _src.Container();
-      this.scene.addChild(this.containerLines);
-
-      this.lines = [];
-      this.timelines = [];
 
       var _iteratorNormalCompletion7 = true;
       var _didIteratorError7 = false;
@@ -1678,7 +1707,7 @@ var WocViz = function () {
                 // l.moveTo(o.x, o.y);
                 // }.bind(this, objRef, line),
                 onComplete: function (o, l) {
-                  l.lineTo(o.x, o.y);
+                  if (l) l.lineTo(o.x, o.y);
                 }.bind(_this4, objRef, line),
                 ease: 'linear'
               }));
@@ -1760,13 +1789,24 @@ var WocViz = function () {
 
     /**
      * @method showOnlyLines
+     * @param lineSlug {array} dot slug to show
      * @param lineSlug {string} dot slug to show
      */
 
   }, {
     key: 'showOnlyLines',
-    value: function showOnlyLines(lineSlug) {
-      this.generateLines(null, lineSlug);
+    value: function showOnlyLines(lineSlugs) {
+      var _this5 = this;
+
+      if (lineSlugs.constructor === Array) {
+        this.clean(function () {
+          lineSlugs.forEach(function (line) {
+            _this5.calculateLines(null, line);
+          });
+        });
+      } else {
+        this.generateLines(null, lineSlugs);
+      }
     }
 
     /**
