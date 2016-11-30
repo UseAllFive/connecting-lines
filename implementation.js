@@ -7,6 +7,21 @@ const is_mobile = parse(window.location.search) ? parse(window.location.search).
 let app = new WocViz();
 
 /**
+ * @event onAppReady
+ * put your callback for when the assets are ready and the
+ * component is ready to render
+ */
+const onAppReady = () => {
+  // app.showBlockLines('fun-palace');
+  // app.showOnlyLines('architecture');
+  app.showOnlyLines(['architecture', 'fun-palace']);
+}
+
+const onLinkClick = (event) => {
+  console.log(event);
+}
+
+/**
  * @method init
  * all properties have a default value if none is passed
  * @see lib/index.js for more info
@@ -41,7 +56,8 @@ app.init({
   showDebug: false,
   forceCanvas: true,
   isMobile: is_mobile,
-  onReady: onAppReady
+  onReady: onAppReady,
+  onLinkClick: onLinkClick
 });
 
 /**
@@ -51,16 +67,6 @@ app.init({
  */
 // app.destroy(true);
 // app = null
-
-/**
- * @event onAppReady
- * put your callback for when the assets are ready and the
- * component is ready to render
- */
-const onAppReady = () => {
-  // app.showBlockLines('safety-curtain');
-  // app.showOnlyLines('architecture');
-}
 
 window.destroy = () => {
   app.destroy();
@@ -88,7 +94,7 @@ window.destroy = () => {
  * @param slug {string} block slug to show the lines
  * @see data.js
  */
-// app.showBlockLines('safety-curtain');
+// app.showBlockLines('fun-palace');
 
 /**
  * @event
