@@ -25,7 +25,7 @@
     "fastclick": "^1.0.6",
     "gsap": "^1.19.0",
     "lodash": "^4.16.4",
-    "pixi.js": "^4.1.0",
+    "pixi.js": "4.1.1",
     "query-string": "^4.2.3",
     "stats-js": "^1.0.0-alpha1"
   },
