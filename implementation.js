@@ -72,6 +72,33 @@ window.destroy = () => {
   app.destroy();
 }
 
+window.init = () => {
+  app.init({
+  	width: window.innerWidth,
+  	height: window.innerHeight,
+    maxImageWidth: 200,
+    maxImageHeight: 200,
+    fontSizes: {
+      title: 30,
+      titleMobile: 18,
+      info: 20,
+      infoMobile: 11,
+      link: 16,
+      linkMobile: 9,
+    },
+    arrowSizeMobile: .8,
+    arrowSize: 1.2,
+    animationTimingMultiplier: 1.1,
+    autoRender: true,
+    canvasContainer: document.body,
+    showDebug: false,
+    forceCanvas: true,
+    isMobile: is_mobile,
+    onReady: onAppReady,
+    onLinkClick: onLinkClick
+  });
+}
+
 /**
  * @method update
  * if {boolean} autoRender set as false
