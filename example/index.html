@@ -378,10 +378,16 @@ var data = {
   ]
 }
 
-
-window.onAppReady = function() {}
-
 var app = new WocViz();
+
+window.onAppReady = function() {
+  // app.showOnlyLines('architecture');
+  app.showOnlyLines(['architecture', 'fun-palace']);
+}
+
+window.onLinkClick = function(event) {
+  console.log(event);
+}
 
 /**
  * @method init
@@ -419,7 +425,8 @@ app.init({
   showDebug: false,
   forceCanvas: true,
   isMobile: false,
-  onReady: window.onAppReady
+  onReady: window.onAppReady,
+  onLinkClick: window.onLinkClick
 });
 
 /**
