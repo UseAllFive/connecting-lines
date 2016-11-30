@@ -587,7 +587,7 @@ var ColorDot = function (_Graphics) {
     _this.blockSlug = blockSlug;
     _this.dotSlug = slug;
 
-    // console.log(data);
+    _this.callbackBind = _this.eventHandler.bind(_this);
 
     _this.beginFill(color);
     _this.drawCircle(0, 0, radius);
@@ -610,7 +610,7 @@ var ColorDot = function (_Graphics) {
         for (var _iterator = events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var event = _step.value;
 
-          this.off(event, this.eventHandler.bind(this));
+          this.off(event, this.callbackBind);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -643,7 +643,7 @@ var ColorDot = function (_Graphics) {
         for (var _iterator2 = events[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var event = _step2.value;
 
-          this.on(event, this.eventHandler.bind(this));
+          this.on(event, this.callbackBind);
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -756,8 +756,6 @@ var options = {
   roundPixels: true
 };
 
-var instance = null;
-
 var Renderer = function Renderer(forceCanvas) {
   _classCallCheck(this, Renderer);
 
@@ -765,15 +763,13 @@ var Renderer = function Renderer(forceCanvas) {
       w = _getSize.w,
       h = _getSize.h;
 
-  if (!instance) {
-    if (forceCanvas) {
-      instance = new _pixi.CanvasRenderer(w, h, options);
-    } else {
-      instance = (0, _pixi.autoDetectRenderer)(w, h, options);
-    }
-  }
+  var instance = void 0;
 
-  instance.plugins.interaction.autoPreventDefault = false;
+  if (forceCanvas) {
+    instance = new _pixi.CanvasRenderer(w, h, options);
+  } else {
+    instance = (0, _pixi.autoDetectRenderer)(w, h, options);
+  }
 
   return instance;
 };
@@ -1082,9 +1078,6 @@ var WocViz = function () {
         block = null;
       });
 
-      this.blocks = null;
-      this.rows = null;
-
       if (this.timelines) {
         this.timelines.forEach(function (t) {
           t.kill();
@@ -1092,16 +1085,17 @@ var WocViz = function () {
         });
       }
 
-      if (this.lines) {
-        this.lines.forEach(function (_ref) {
-          var line = _ref.line;
+      // if(this.lines) {
+      //   this.lines.forEach(({line}) => {
+      //     TweenMax.killTweensOf(line);
+      //   });
+      // }
 
-          _gsap.TweenMax.killTweensOf(line);
-        });
-      }
-
+      this.blocks = null;
       this.lines = null;
       this.timelines = null;
+      this.maxPerRow = null;
+      this.rows = null;
 
       if (this.containerLines) {
         _gsap.TweenMax.killTweensOf(this.containerLines);
@@ -1170,6 +1164,7 @@ var WocViz = function () {
       this.renderer = new _renderer2.default(this.forceCanvas);
       this.canvasContainer.appendChild(this.renderer.view);
       (0, _fastclick2.default)(this.canvasContainer);
+      this.renderer.plugins.interaction.autoPreventDefault = false;
 
       this.scene = new _pixi.Container();
       this.scene.interactive = true;
@@ -1439,13 +1434,8 @@ var WocViz = function () {
           t.kill();
         });
 
-        if (this.lines) this.lines.forEach(function (_ref2) {
-          var line = _ref2.line;
-
-          _gsap.TweenMax.killTweensOf(line);
-        });
-
         if (this.containerLines) {
+          _gsap.TweenMax.killTweensOf(this.containerLines);
           _gsap.TweenMax.to(this.containerLines, .3, {
             alpha: 0, onComplete: function onComplete() {
               if (_this2.containerLines) _this2.containerLines.destroy(true);
@@ -1673,16 +1663,18 @@ var WocViz = function () {
           var timeline = new _gsap.TimelineMax({
             paused: true,
 
-            onStart: function (l, c, x, y) {
+            onStart: function onStart(l, c, x, y) {
               l.moveTo(x, y);
               l.lineStyle(1, color);
-            }.bind(_this4, line, color, points[0][0], points[0][1]),
+            },
+            onStartParams: [line, color, points[0][0], points[0][1]],
 
-            onComplete: function (l) {
+            onComplete: function onComplete(l) {
               // console.log('finish curve');
               // l.stroke();
               l.endFill();
-            }.bind(_this4, line)
+            },
+            onCompleteParams: [line]
 
           });
 
@@ -1703,12 +1695,10 @@ var WocViz = function () {
               timeline.add(_gsap.TweenMax.to(objRef, time, {
                 x: curvePoints[j].x,
                 y: curvePoints[j].y,
-                // onStart: function(o, l) {
-                // l.moveTo(o.x, o.y);
-                // }.bind(this, objRef, line),
-                onComplete: function (o, l) {
+                onComplete: function onComplete(o, l) {
                   if (l) l.lineTo(o.x, o.y);
-                }.bind(_this4, objRef, line),
+                },
+                onCompleteParams: [objRef, line],
                 ease: 'linear'
               }));
             };
@@ -1733,6 +1723,11 @@ var WocViz = function () {
           }
         }
       }
+    }
+  }, {
+    key: 'lineTo',
+    value: function lineTo(objRef, line) {
+      line.lineTo(objRef.x, objRef.y);
     }
 
     /**
@@ -2057,6 +2052,7 @@ var spans = [];
 var mainContainer = null;
 
 var loadFonts = exports.loadFonts = function loadFonts(fonts, container) {
+  spans = [];
   mainContainer = container;
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
@@ -2139,8 +2135,6 @@ var destroyLoader = exports.destroyLoader = function destroyLoader() {
       _pixi.loader.resources[asset] = null;
     }
   }
-
-  _pixi.loader.resources = null;
 };
 
 },{"pixi.js":145}],11:[function(require,module,exports){
