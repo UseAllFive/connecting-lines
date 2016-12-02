@@ -693,7 +693,7 @@ var _config = require('../../utils/config');
 
 var styleTitle = exports.styleTitle = function styleTitle() {
   return {
-    fontFamily: 'SangBleu BP',
+    fontFamily: 'sangbleu-light',
     fontSize: (0, _config.getFontSizes)().title,
     fill: 0x000000,
     align: 'left'
@@ -708,7 +708,7 @@ var styleTitleMobile = exports.styleTitleMobile = function styleTitleMobile() {
 
 var styleInfo = exports.styleInfo = function styleInfo() {
   return {
-    fontFamily: 'GT Sectra Trial',
+    fontFamily: 'sectra-book',
     fontSize: (0, _config.getFontSizes)().info,
     fill: 0x000000,
     align: 'left'
@@ -723,7 +723,7 @@ var styleInfoMobile = exports.styleInfoMobile = function styleInfoMobile() {
 
 var styleLink = exports.styleLink = function styleLink() {
   return {
-    fontFamily: 'Castledown',
+    fontFamily: 'castledown-regular',
     fontSize: (0, _config.getFontSizes)().link,
     fill: 0x000000,
     align: 'left'
@@ -1048,7 +1048,7 @@ var WocViz = function () {
         hr: height || window.innerHeight
       });
 
-      var fontNames = ['SangBleu BP', 'GT Sectra Trial', 'Castledown'];
+      var fontNames = ['sangbleu-light', 'sectra-book', 'castledown-regular'];
 
       (0, _loader.loadFonts)(fontNames, this.canvasContainer);
 
