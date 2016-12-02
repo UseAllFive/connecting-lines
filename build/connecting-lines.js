@@ -292,12 +292,10 @@ var Block = function (_Container) {
     key: 'onMouseOver',
     value: function onMouseOver() {
       _gsap.TweenMax.killTweensOf(this.imageContainer);
-      _gsap.TweenMax.killTweensOf(this.info);
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
       _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .35 });
-      _gsap.TweenMax.to(this.info, .25, { alpha: 1, x: this.info.__startPos + 10 });
       _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .1 });
       _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .1 });
       this.animateImages();
@@ -306,12 +304,10 @@ var Block = function (_Container) {
     key: 'onMouseOut',
     value: function onMouseOut() {
       _gsap.TweenMax.killTweensOf(this.imageContainer);
-      _gsap.TweenMax.killTweensOf(this.info);
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
       _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .5 });
-      _gsap.TweenMax.to(this.info, .25, { alpha: 0, x: this.info.__startPos, delay: .1 });
       _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos });
       _gsap.TweenMax.to(this.link, .25, { alpha: 0, x: this.link.__startPos });
       this.animateImages(false);
@@ -483,8 +479,7 @@ var Block = function (_Container) {
 
       this.info = new _src.Text(info, (0, _config.IS_MOBILE)() ? (0, _styles.styleInfoMobile)() : (0, _styles.styleInfo)());
       // this.info.resolution = window.devicePixelRatio;
-      this.info.alpha = 0;
-      this.info.position.x = (0, _config.IS_MOBILE)() ? 6 : 22;
+      this.info.position.x = (0, _config.IS_MOBILE)() ? 6 : 32;
       this.info.position.y = this.title.height + offset;
       this.info.__startPos = this.info.position.x;
       this.addChild(this.info);
