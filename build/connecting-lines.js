@@ -178,6 +178,7 @@ var Block = function (_Container) {
 
       this.imageContainer.destroy(true);
       this.imageContainer = null;
+      this.selected = false;
 
       this.buttonMode = false;
       this.interactive = false;
