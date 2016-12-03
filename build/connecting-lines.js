@@ -236,7 +236,7 @@ var Block = function (_Container) {
     value: function addEvents() {
       this.buttonMode = true;
       this.interactive = true;
-      var events = (0, _config.IS_MOBILE)() ? ['tap'] : ['mouseover', 'mouseout'];
+      var events = (0, _config.IS_MOBILE)() ? ['tap'] : ['click'];
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
@@ -267,8 +267,15 @@ var Block = function (_Container) {
     value: function eventHandler(event) {
       switch (event.type) {
         case 'click':
-          if (event.target.alpha === 0) return;
-          this.emit('clickedLink', this.blockSlug);
+          if (event.target instanceof _ColorDot2.default === false) {
+            if (this.selected) {
+              this.emit('clickedLink', this.blockSlug);
+            } else {
+              this.emit('over', { blockSlug: this.blockSlug });
+              this.onFirstClick();
+            }
+            this.selected = !this.selected;
+          }
           break;
 
         case 'tap':
@@ -278,19 +285,22 @@ var Block = function (_Container) {
             window.open(this.linkURL);
             return;
           }
+          break;
+
         case 'mouseover':
           this.emit('over', { blockSlug: this.blockSlug });
-          this.onMouseOver();
+          this.onFirstClick();
           break;
 
         case 'mouseout':
           this.onMouseOut();
           break;
+
       }
     }
   }, {
-    key: 'onMouseOver',
-    value: function onMouseOver() {
+    key: 'onFirstClick',
+    value: function onFirstClick() {
       _gsap.TweenMax.killTweensOf(this.imageContainer);
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
@@ -310,6 +320,7 @@ var Block = function (_Container) {
       _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .5 });
       _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos });
       _gsap.TweenMax.to(this.link, .25, { alpha: 0, x: this.link.__startPos });
+      this.selected = false;
       this.animateImages(false);
     }
   }, {
@@ -1217,7 +1228,9 @@ var WocViz = function () {
     key: 'hideAllOpenedBlocks',
     value: function hideAllOpenedBlocks() {
       this.blocks.forEach(function (block) {
-        block.onMouseOut();
+        if (block.selected) {
+          block.onMouseOut();
+        }
       });
     }
 
@@ -1286,10 +1299,8 @@ var WocViz = function () {
   }, {
     key: 'onBlockOver',
     value: function onBlockOver(event) {
+      this.hideAllOpenedBlocks();
       this.generateLines(event.blockSlug);
-      if ((0, _config.IS_MOBILE)()) {
-        this.hideAllOpenedBlocks();
-      }
     }
 
     /**
@@ -1301,6 +1312,7 @@ var WocViz = function () {
   }, {
     key: 'onDotClick',
     value: function onDotClick(event) {
+      this.hideAllOpenedBlocks();
       this.generateLines(event.blockSlug, event.dotSlug);
     }
 
@@ -1778,6 +1790,7 @@ var WocViz = function () {
   }, {
     key: 'showBlockLines',
     value: function showBlockLines(blockSlug) {
+      this.hideAllOpenedBlocks();
       this.generateLines(blockSlug);
     }
 
@@ -1792,6 +1805,7 @@ var WocViz = function () {
     value: function showOnlyLines(lineSlugs) {
       var _this5 = this;
 
+      this.hideAllOpenedBlocks();
       if (lineSlugs.constructor === Array) {
         this.clean(function () {
           lineSlugs.forEach(function (line) {
