@@ -14,7 +14,7 @@ let app = new WocViz();
 const onAppReady = () => {
   // app.showBlockLines('fun-palace');
   // app.showOnlyLines('architecture');
-  app.showOnlyLines(['architecture', 'fun-palace']);
+  // app.showOnlyLines(['architecture', 'fun-palace']);
 }
 
 const onLinkClick = (event) => {
@@ -48,12 +48,18 @@ app.init({
     link: 16,
     linkMobile: 9,
   },
+  safeZone: {
+    x: 0,
+    y: 0,
+    width: 400,
+    height: 700,
+  },
   arrowSizeMobile: .8,
   arrowSize: 1.2,
-  animationTimingMultiplier: 1.1,
+  animationTimingMultiplier: 1.3,
   autoRender: true,
   canvasContainer: document.body,
-  retina: false,
+  retina: true,
   showDebug: false,
   forceCanvas: true,
   isMobile: is_mobile,

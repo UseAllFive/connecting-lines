@@ -89,10 +89,12 @@ var Block = function (_Container) {
    * @param link
    * @param url
    */
-  function Block(props, maxImageWidth, maxImageHeight) {
+  function Block(props, maxImageWidth, maxImageHeight, showDebug) {
     _classCallCheck(this, Block);
 
     var _this = _possibleConstructorReturn(this, (Block.__proto__ || Object.getPrototypeOf(Block)).call(this));
+
+    _this.showDebug = showDebug;
 
     var title = props.title,
         links = props.links,
@@ -283,7 +285,7 @@ var Block = function (_Container) {
           if (event.currentTarget instanceof _src.Text) {
             event.stopPropagation();
             if (event.target.alpha === 0) return;
-            window.open(this.linkURL);
+            this.emit('clickedLink', this.blockSlug);
             return;
           }
           break;
@@ -306,7 +308,7 @@ var Block = function (_Container) {
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
-      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .35 });
+      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: 1 });
       _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .1 });
       _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .1 });
       this.animateImages();
@@ -329,27 +331,51 @@ var Block = function (_Container) {
     value: function animateImages() {
       var animIn = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
+      // let i = 0;
       this.imageContainer.children.forEach(function (image) {
         _gsap.TweenMax.killTweensOf(image);
         _gsap.TweenMax.to(image.scale, .25, {
-          x: image.__scale + (!animIn ? 0 : -.015),
-          y: image.__scale + (!animIn ? 0 : -.015)
+          x: image.__scale * (!animIn ? 1 : 1.5),
+          y: image.__scale * (!animIn ? 1 : 1.5),
+          // delay: i * .05,
+          ease: _gsap.Power2.easeOut
         });
+        // i++;
       });
     }
   }, {
     key: 'createHitTest',
     value: function createHitTest() {
+      var _getBounds = this.getBounds(),
+          x = _getBounds.x,
+          y = _getBounds.y,
+          width = _getBounds.width,
+          height = _getBounds.height;
+
+      this.pivot = new _src.Point(x, y);
+
+      this.hitTest.x = x;
+      this.hitTest.y = y;
+
       this.hitTest.clear();
-      this.hitTest.beginFill(0xFf00ff, 0);
-      this.hitTest.drawRect(0, 0, this.width, this.height);
+      this.hitTest.beginFill(0xFf00ff, this.showDebug ? 0.1 : 0);
+      this.hitTest.drawRect(0, 0, width, height);
       this.hitTest.endFill();
+
+      this.resetScaleImages();
     }
   }, {
     key: 'addImages',
     value: function addImages(images) {
       var addedImages = 0;
-      var offset = (0, _config.IS_MOBILE)() ? 5 : 15;
+
+      var angle = _Maths.TWO_PI / 3;
+      var startRotation = (0, _config.IS_MOBILE)() ? 0 : (0, _Maths.random)(0, 180) * _Maths.ANGLE_TO_RAD;
+
+      // multiply my this value, so we know how much bigger
+      // the image will be
+      // in this case, 50% bigger than the normal scale
+      var hoverPerc = 1.5;
 
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
@@ -366,32 +392,35 @@ var Block = function (_Container) {
 
           var sprite = new _src.Sprite(texture);
           sprite.__scale = (0, _config.IS_MOBILE)() ? scale / 2 : scale;
+          sprite.__scale *= (0, _Maths.random)(0.7, 1);
+          sprite.__originalScale = sprite.__scale;
+          sprite.__scale = sprite.__scale * hoverPerc;
           sprite.pivot = new _src.Point(sprite.width / 2, sprite.height / 2);
           sprite.scale.x = sprite.__scale;
           sprite.scale.y = sprite.__scale;
           // sprite.scale.set( sprite.__scale );
-
+          //
           var pos = new _src.Point();
 
-          switch (addedImages) {
-            case 0:
-              pos.x = sprite.width / 2 + (0, _Maths.random)(5, offset);
-              pos.y = sprite.height / 2 + (0, _Maths.random)(5, offset);
-              // sprite.tint = 0xFF0000;
-              break;
+          var currentAngle = angle * addedImages - startRotation;
 
-            case 1:
-              pos.x = this.imageContainer.width + sprite.width / 2 + 10 + (0, _Maths.random)(5, offset);
-              pos.y = sprite.height / 2 + (0, _Maths.random)(5, offset);
-              // sprite.tint = 0xFFFF00;
-              break;
+          var spacingPercentage = .85;
+          pos.x = sprite.width * spacingPercentage * Math.cos(currentAngle);
+          pos.y = sprite.height * spacingPercentage * Math.sin(currentAngle);
 
-            case 2:
-              pos.x = sprite.width / 2 + (0, _Maths.random)(offset / 2, offset + 10);
-              pos.y = this.imageContainer.height + sprite.height / 2 + 10 + (0, _Maths.random)(0, offset);
-              // sprite.tint = 0x00FF00;
-              break;
-          }
+          // switch(addedImages) {
+          //   case 0:
+          //     sprite.tint = 0xFF0000;
+          //     break;
+          //
+          //   case 1:
+          //     sprite.tint = 0xFFFF00;
+          //     break;
+          //
+          //   case 2:
+          //     sprite.tint = 0x00FF00;
+          //     break;
+          // }
 
           addedImages++;
 
@@ -421,6 +450,15 @@ var Block = function (_Container) {
       }
     }
   }, {
+    key: 'resetScaleImages',
+    value: function resetScaleImages() {
+      this.imageContainer.children.forEach(function (block) {
+        block.__scale = block.__originalScale;
+        block.scale.x = block.__scale;
+        block.scale.y = block.__scale;
+      });
+    }
+  }, {
     key: 'addLinks',
     value: function addLinks(links) {
       var _this2 = this;
@@ -434,7 +472,7 @@ var Block = function (_Container) {
 
       var row = -1;
       var col = 0;
-      var offset = (0, _config.IS_MOBILE)() ? 7 : 14;
+      var offset = (0, _config.IS_MOBILE)() ? 5 : 8;
 
       if (!links) return;
 
@@ -581,7 +619,7 @@ var ColorDot = function (_Graphics) {
 
     var _this = _possibleConstructorReturn(this, (ColorDot.__proto__ || Object.getPrototypeOf(ColorDot)).call(this));
 
-    var radius = (0, _config.IS_MOBILE)() ? 3 : 6;
+    var radius = (0, _config.IS_MOBILE)() ? 1.5 : 3;
     var color = data.color,
         id = data.id,
         slug = data.slug;
@@ -995,6 +1033,7 @@ var WocViz = function () {
           arrowSize = props.arrowSize,
           arrowSizeMobile = props.arrowSizeMobile,
           showDebug = props.showDebug,
+          safeZone = props.safeZone,
           animationTimingMultiplier = props.animationTimingMultiplier,
           onReady = props.onReady,
           onLinkClick = props.onLinkClick,
@@ -1002,6 +1041,13 @@ var WocViz = function () {
 
 
       this.retina = retina;
+      this.safeZone = safeZone || {
+        width: 200,
+        height: 200,
+        x: 0,
+        y: 0
+      };
+
       this.autoRender = autoRender || true;
       this.canvasContainer = canvasContainer || document.body;
       this.forceCanvas = forceCanvas;
@@ -1095,12 +1141,6 @@ var WocViz = function () {
           t = null;
         });
       }
-
-      // if(this.lines) {
-      //   this.lines.forEach(({line}) => {
-      //     TweenMax.killTweensOf(line);
-      //   });
-      // }
 
       this.blocks = null;
       this.lines = null;
@@ -1212,12 +1252,7 @@ var WocViz = function () {
       }
 
       this.hideAllOpenedBlocks();
-
-      if (this.containerLines) {
-        this.containerLines.destroy(true);
-        this.scene.removeChild(this.containerLines);
-        this.containerLines = null;
-      }
+      this.clean();
     }
 
     /**
@@ -1229,9 +1264,7 @@ var WocViz = function () {
     key: 'hideAllOpenedBlocks',
     value: function hideAllOpenedBlocks() {
       this.blocks.forEach(function (block) {
-        if (block.selected) {
-          block.onMouseOut();
-        }
+        block.onMouseOut();
       });
     }
 
@@ -1260,7 +1293,7 @@ var WocViz = function () {
         for (var _iterator = blocks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var blockData = _step.value;
 
-          var block = new _Block2.default(blockData, this.maxImageWidth, this.maxImageHeight);
+          var block = new _Block2.default(blockData, this.maxImageWidth, this.maxImageHeight, this.showDebug);
           block.on('over', this.callbackRefs['over']);
           block.on('clickDot', this.callbackRefs['clickDot']);
           block.on('clickedLink', this.onLinkClick);
@@ -1334,10 +1367,19 @@ var WocViz = function () {
           wr = _getSize.wr;
 
       var area = wr / row;
-      return {
+      var returnPoint = {
         x: area * i + (0, _Maths.random)(area - width),
         y: (0, _Maths.random)(rowY + (0, _Maths.random)((0, _config.IS_MOBILE)() ? 5 : 20, (0, _config.IS_MOBILE)() ? 0 : 0), offset.y + rowY)
       };
+
+      var safeX = this.safeZone.x + this.safeZone.width;
+      var safeY = this.safeZone.y + this.safeZone.height;
+
+      if (returnPoint.y < safeY) {
+        returnPoint.x = Math.max(returnPoint.x, safeX);
+      }
+
+      return returnPoint;
     }
 
     /**
@@ -1390,12 +1432,12 @@ var WocViz = function () {
               break;
             }
             var block = this.blocks[index];
-            var offset = { x: 15, y: (0, _config.IS_MOBILE)() ? 15 : 30 };
+            var offset = { x: 0, y: 0 };
             var point = this.calculatePoint(block.width, rowY, offset, row, i);
             block.x = point.x;
             block.y = point.y;
             index++;
-            rowHeight = Math.max(rowHeight, block.height + offset.y);
+            rowHeight = Math.max(rowHeight, block.height);
           }
           rowY += rowHeight;
         }
@@ -1708,7 +1750,12 @@ var WocViz = function () {
                 x: curvePoints[j].x,
                 y: curvePoints[j].y,
                 onComplete: function onComplete(o, l) {
-                  if (l) l.lineTo(o.x, o.y);
+                  // try catch due to TweenMax not cleaning properly
+                  try {
+                    l.lineTo(o.x, o.y);
+                  } catch (e) {
+                    console.log(e);
+                  }
                 },
                 onCompleteParams: [objRef, line],
                 ease: 'linear'
@@ -1766,17 +1813,19 @@ var WocViz = function () {
   }, {
     key: 'resizeRenderer',
     value: function resizeRenderer() {
-      this.renderer.resize((0, _config.getSize)().wr, Math.max((0, _config.getSize)().minHeight, (0, _config.getSize)().hr));
+      var _this5 = this;
+
+      this.renderer.resize((0, _config.getSize)().wr, (0, _Maths.round)(this.scene.height));
       var scale = 1 / this.renderer.resolution;
       this.renderer.view.style.width = this.renderer.width * scale + 'px';
       this.renderer.view.style.height = this.renderer.height * scale + 'px';
 
-      this.clean();
-
-      this.sceneHitTest.clear();
-      this.sceneHitTest.beginFill(0xFf00ff, 0);
-      this.sceneHitTest.drawRect(0, 0, this.renderer.width, this.renderer.height);
-      this.sceneHitTest.endFill();
+      this.clean(function () {
+        _this5.sceneHitTest.clear();
+        _this5.sceneHitTest.beginFill(0xFf00ff, _this5.showDebug ? 0.1 : 0);
+        _this5.sceneHitTest.drawRect(0, 0, _this5.renderer.width, _this5.scene.height);
+        _this5.sceneHitTest.endFill();
+      });
     }
 
     /**
@@ -1804,13 +1853,13 @@ var WocViz = function () {
   }, {
     key: 'showOnlyLines',
     value: function showOnlyLines(lineSlugs) {
-      var _this5 = this;
+      var _this6 = this;
 
       this.hideAllOpenedBlocks();
       if (lineSlugs.constructor === Array) {
         this.clean(function () {
           lineSlugs.forEach(function (line) {
-            _this5.calculateLines(null, line);
+            _this6.calculateLines(null, line);
           });
         });
       } else {
@@ -1868,7 +1917,7 @@ window.WocViz = WocViz; // eslint-disable-line
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.addCurveSegment = exports.distance = exports.clamp = exports.ANGLE_TO_RAD = exports.RAD_TO_ANGLE = exports.roundRandom = exports.coin = exports.random = exports.floor = exports.round = undefined;
+exports.addCurveSegment = exports.distance = exports.clamp = exports.TWO_PI = exports.ANGLE_TO_RAD = exports.RAD_TO_ANGLE = exports.roundRandom = exports.coin = exports.random = exports.floor = exports.round = undefined;
 
 var _smooth = require('./smooth');
 
@@ -1897,6 +1946,7 @@ var roundRandom = exports.roundRandom = function roundRandom(max, min) {
 
 var RAD_TO_ANGLE = exports.RAD_TO_ANGLE = 180 / Math.PI;
 var ANGLE_TO_RAD = exports.ANGLE_TO_RAD = Math.PI / 180;
+var TWO_PI = exports.TWO_PI = Math.PI * 2;
 
 var clamp = exports.clamp = function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
