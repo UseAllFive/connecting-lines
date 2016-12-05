@@ -65,6 +65,8 @@ var _arrow = require('../arrow/arrow');
 
 var _arrow2 = _interopRequireDefault(_arrow);
 
+var _lodash = require('lodash');
+
 var _styles = require('./styles');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -76,6 +78,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var data = (0, _config.getData)();
+var HOVER_PERC = 1.38;
 
 var Block = function (_Container) {
   _inherits(Block, _Container);
@@ -125,6 +128,8 @@ var Block = function (_Container) {
 
     _this.imageContainer = new _src.Container();
     _this.imageContainer.alpha = .5;
+    _this.imageContainer.x = 25;
+    _this.imageContainer.y = 30;
     _this.addChild(_this.imageContainer);
 
     _this.callbackRef = _this.eventHandler.bind(_this);
@@ -335,10 +340,8 @@ var Block = function (_Container) {
       this.imageContainer.children.forEach(function (image) {
         _gsap.TweenMax.killTweensOf(image);
         _gsap.TweenMax.to(image.scale, .25, {
-          x: image.__scale * (!animIn ? 1 : 1.5),
-          y: image.__scale * (!animIn ? 1 : 1.5),
-          // delay: i * .05,
-          ease: _gsap.Power2.easeOut
+          x: image.__scale * (!animIn ? 1 : HOVER_PERC),
+          y: image.__scale * (!animIn ? 1 : HOVER_PERC)
         });
         // i++;
       });
@@ -370,13 +373,14 @@ var Block = function (_Container) {
       var addedImages = 0;
 
       var angle = _Maths.TWO_PI / 3;
-      var startRotation = (0, _config.IS_MOBILE)() ? 0 : (0, _Maths.random)(0, 180) * _Maths.ANGLE_TO_RAD;
+      // const startRotation = (IS_MOBILE() ? 0 : (random(0, 180) * ANGLE_TO_RAD));
+      var startRotation = (0, _config.IS_MOBILE)() ? 0 : _Maths.ANGLE_TO_RAD;
 
       // multiply my this value, so we know how much bigger
       // the image will be
       // in this case, 50% bigger than the normal scale
-      var hoverPerc = 1.5;
 
+      images = (0, _lodash.shuffle)(images);
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
       var _iteratorError4 = undefined;
@@ -394,7 +398,7 @@ var Block = function (_Container) {
           sprite.__scale = (0, _config.IS_MOBILE)() ? scale / 2 : scale;
           sprite.__scale *= (0, _Maths.random)(0.7, 1);
           sprite.__originalScale = sprite.__scale;
-          sprite.__scale = sprite.__scale * hoverPerc;
+          sprite.__scale = sprite.__scale * HOVER_PERC;
           sprite.pivot = new _src.Point(sprite.width / 2, sprite.height / 2);
           sprite.scale.x = sprite.__scale;
           sprite.scale.y = sprite.__scale;
@@ -404,23 +408,25 @@ var Block = function (_Container) {
 
           var currentAngle = angle * addedImages - startRotation;
 
-          var spacingPercentage = .85;
+          var spacingPercentage = .78;
           pos.x = sprite.width * spacingPercentage * Math.cos(currentAngle);
           pos.y = sprite.height * spacingPercentage * Math.sin(currentAngle);
 
-          // switch(addedImages) {
-          //   case 0:
-          //     sprite.tint = 0xFF0000;
-          //     break;
-          //
-          //   case 1:
-          //     sprite.tint = 0xFFFF00;
-          //     break;
-          //
-          //   case 2:
-          //     sprite.tint = 0x00FF00;
-          //     break;
-          // }
+          switch (addedImages) {
+            case 0:
+              if (this.showDebug) sprite.tint = 0xFF0000;
+              break;
+
+            case 1:
+              // pos.x = Math.min(pos.x, this.imageContainer.width);
+              if (this.showDebug) sprite.tint = 0xFFFF00;
+              break;
+
+            case 2:
+              // pos.y = Math.min(pos.y, this.imageContainer.height);
+              if (this.showDebug) sprite.tint = 0x00FF00;
+              break;
+          }
 
           addedImages++;
 
@@ -590,7 +596,7 @@ var Block = function (_Container) {
 
 exports.default = Block;
 
-},{"../../utils/Maths":8,"../../utils/config":9,"../arrow/arrow":1,"./ColorDot":3,"./styles":4,"gsap":16,"pixi.js/src":143}],3:[function(require,module,exports){
+},{"../../utils/Maths":8,"../../utils/config":9,"../arrow/arrow":1,"./ColorDot":3,"./styles":4,"gsap":16,"lodash":18,"pixi.js/src":143}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1362,6 +1368,8 @@ var WocViz = function () {
     key: 'calculatePoint',
     value: function calculatePoint(width, rowY, offset, row, i) {
       offset = offset || { x: 0, y: 0 };
+      offset.y = (0, _config.IS_MOBILE)() ? 5 : 25;
+      offset.x = (0, _config.IS_MOBILE)() ? 5 : 25;
 
       var _getSize = (0, _config.getSize)(),
           wr = _getSize.wr;
@@ -1369,7 +1377,7 @@ var WocViz = function () {
       var area = wr / row;
       var returnPoint = {
         x: area * i + (0, _Maths.random)(area - width),
-        y: (0, _Maths.random)(rowY + (0, _Maths.random)((0, _config.IS_MOBILE)() ? 5 : 20, (0, _config.IS_MOBILE)() ? 0 : 0), offset.y + rowY)
+        y: rowY
       };
 
       var safeX = this.safeZone.x + this.safeZone.width;
@@ -1439,7 +1447,7 @@ var WocViz = function () {
             index++;
             rowHeight = Math.max(rowHeight, block.height);
           }
-          rowY += rowHeight;
+          rowY += rowHeight + 25;
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -1488,26 +1496,25 @@ var WocViz = function () {
           t.kill();
         });
 
-        if (this.containerLines) {
-          _gsap.TweenMax.killTweensOf(this.containerLines);
-          _gsap.TweenMax.to(this.containerLines, .3, {
-            alpha: 0, onComplete: function onComplete() {
-              if (_this2.containerLines) _this2.containerLines.destroy(true);
-              _this2.scene.removeChild(_this2.containerLines);
-              _this2.containerLines = null;
+        var onComplete = function onComplete() {
+          _this2.containerLines.destroy(true);
+          _this2.scene.removeChild(_this2.containerLines);
+          _this2.containerLines = null;
 
-              _this2.startReferences();
-              if (cb) cb();
-            }
-          });
-        } else {
-          this.startReferences();
+          _this2.startReferences();
           if (cb) cb();
-        }
-      } else {
-        this.startReferences();
-        if (cb) cb();
+        };
+
+        _gsap.TweenMax.killTweensOf(this.containerLines);
+        _gsap.TweenMax.to(this.containerLines, .1, {
+          alpha: 0, onComplete: onComplete
+        });
+
+        return;
       }
+
+      this.startReferences();
+      if (cb) cb();
     }
 
     /**

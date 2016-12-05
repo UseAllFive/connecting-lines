@@ -59,7 +59,7 @@ app.init({
   animationTimingMultiplier: 1.3,
   autoRender: true,
   canvasContainer: document.body,
-  retina: true,
+  retina: false,
   showDebug: false,
   forceCanvas: true,
   isMobile: is_mobile,
