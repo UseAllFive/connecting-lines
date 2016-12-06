@@ -1131,6 +1131,8 @@ var WocViz = function () {
       var destroyCanvas = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
 
+      _gsap.TweenMax.ticker.removeEventListener('tick', this.update);
+
       this.sceneHitTest.off((0, _config.IS_MOBILE)() ? 'tap' : 'click', this.refOnHideAllLines);
 
       if (this.stats) document.body.removeChild(this.stats.domElement);
@@ -1169,8 +1171,8 @@ var WocViz = function () {
       this.scene.destroy(true);
       this.scene = null;
       this.renderer.destroy(destroyCanvas);
-      if (this.raf) cancelAnimationFrame(this.raf);
-      this.raf = null;
+      // if(this.raf) cancelAnimationFrame(this.raf);
+      // this.raf = null;
     }
 
     /**
@@ -1188,7 +1190,10 @@ var WocViz = function () {
       }
 
       if (this.onReady) this.onReady();
-      if (this.autoRender) this.update();
+      if (this.autoRender) {
+        _gsap.TweenMax.ticker.addEventListener('tick', this.update, this, true, 1);
+        // this.update();
+      }
     }
 
     /**
@@ -1241,6 +1246,7 @@ var WocViz = function () {
     key: 'addEvents',
     value: function addEvents() {
       this.refOnHideAllLines = this.onHideAllLines.bind(this);
+      this.refOnCompletClean = this.onCompleteClean.bind(this);
       this.sceneHitTest.on((0, _config.IS_MOBILE)() ? 'tap' : 'click', this.refOnHideAllLines);
     }
 
@@ -1478,6 +1484,16 @@ var WocViz = function () {
       this.lines = [];
       this.timelines = [];
     }
+  }, {
+    key: 'onCompleteClean',
+    value: function onCompleteClean(cb) {
+      this.containerLines.destroy(true);
+      this.scene.removeChild(this.containerLines);
+      this.containerLines = null;
+
+      this.startReferences();
+      if (cb) cb();
+    }
 
     /**
      * @method clean
@@ -1489,25 +1505,14 @@ var WocViz = function () {
   }, {
     key: 'clean',
     value: function clean(cb) {
-      var _this2 = this;
-
       if (this.containerLines) {
         if (this.timelines) this.timelines.forEach(function (t) {
           t.kill();
         });
 
-        var onComplete = function onComplete() {
-          _this2.containerLines.destroy(true);
-          _this2.scene.removeChild(_this2.containerLines);
-          _this2.containerLines = null;
-
-          _this2.startReferences();
-          if (cb) cb();
-        };
-
         _gsap.TweenMax.killTweensOf(this.containerLines);
-        _gsap.TweenMax.to(this.containerLines, .1, {
-          alpha: 0, onComplete: onComplete
+        _gsap.TweenMax.to(this.containerLines, .25, {
+          alpha: 0, onComplete: this.refOnCompletClean, onCompleteParams: [cb]
         });
 
         return;
@@ -1527,12 +1532,12 @@ var WocViz = function () {
   }, {
     key: 'generateLines',
     value: function generateLines(blockSlug) {
-      var _this3 = this;
+      var _this2 = this;
 
       var dotSlug = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
       this.clean(function () {
-        _this3.calculateLines(blockSlug, dotSlug);
+        _this2.calculateLines(blockSlug, dotSlug);
       });
     }
 
@@ -1546,7 +1551,7 @@ var WocViz = function () {
   }, {
     key: 'calculateLines',
     value: function calculateLines(blockSlug) {
-      var _this4 = this;
+      var _this3 = this;
 
       var dotSlug = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
@@ -1684,7 +1689,7 @@ var WocViz = function () {
           var group = _step7.value;
 
           var line = new _src.Graphics();
-          _this4.containerLines.addChild(line);
+          _this3.containerLines.addChild(line);
 
           var points = [];
           var color = void 0;
@@ -1719,7 +1724,7 @@ var WocViz = function () {
             }
           }
 
-          _this4.lines.push({ line: line, color: color });
+          _this3.lines.push({ line: line, color: color });
 
           var timeline = new _gsap.TimelineMax({
             paused: true,
@@ -1739,7 +1744,7 @@ var WocViz = function () {
 
           });
 
-          _this4.timelines.push(timeline);
+          _this3.timelines.push(timeline);
 
           for (var i = 0; i < points.length - 1; i++) {
 
@@ -1752,7 +1757,7 @@ var WocViz = function () {
                 y: j === 0 ? points[i][1] : curvePoints[j - 1].y
               };
 
-              var time = 1 / curvePoints.length * _this4.animationTimingMultiplier;
+              var time = 1 / curvePoints.length * _this3.animationTimingMultiplier;
               timeline.add(_gsap.TweenMax.to(objRef, time, {
                 x: curvePoints[j].x,
                 y: curvePoints[j].y,
@@ -1809,7 +1814,7 @@ var WocViz = function () {
       this.renderer.render(this.scene);
 
       if (this.stats) this.stats.end();
-      if (this.autoRender) this.raf = requestAnimationFrame(this.update.bind(this));
+      // if(this.autoRender) this.raf = requestAnimationFrame(this.update.bind(this));
     }
 
     /**
@@ -1820,7 +1825,7 @@ var WocViz = function () {
   }, {
     key: 'resizeRenderer',
     value: function resizeRenderer() {
-      var _this5 = this;
+      var _this4 = this;
 
       this.renderer.resize((0, _config.getSize)().wr, (0, _Maths.round)(this.scene.height));
       var scale = 1 / this.renderer.resolution;
@@ -1828,10 +1833,10 @@ var WocViz = function () {
       this.renderer.view.style.height = this.renderer.height * scale + 'px';
 
       this.clean(function () {
-        _this5.sceneHitTest.clear();
-        _this5.sceneHitTest.beginFill(0xFf00ff, _this5.showDebug ? 0.1 : 0);
-        _this5.sceneHitTest.drawRect(0, 0, _this5.renderer.width, _this5.scene.height);
-        _this5.sceneHitTest.endFill();
+        _this4.sceneHitTest.clear();
+        _this4.sceneHitTest.beginFill(0xFf00ff, _this4.showDebug ? 0.1 : 0);
+        _this4.sceneHitTest.drawRect(0, 0, _this4.renderer.width, _this4.scene.height);
+        _this4.sceneHitTest.endFill();
       });
     }
 
@@ -1860,13 +1865,13 @@ var WocViz = function () {
   }, {
     key: 'showOnlyLines',
     value: function showOnlyLines(lineSlugs) {
-      var _this6 = this;
+      var _this5 = this;
 
       this.hideAllOpenedBlocks();
       if (lineSlugs.constructor === Array) {
         this.clean(function () {
           lineSlugs.forEach(function (line) {
-            _this6.calculateLines(null, line);
+            _this5.calculateLines(null, line);
           });
         });
       } else {
