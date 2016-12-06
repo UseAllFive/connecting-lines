@@ -244,7 +244,7 @@ var Block = function (_Container) {
     value: function addEvents() {
       this.buttonMode = true;
       this.interactive = true;
-      var events = (0, _config.IS_MOBILE)() ? ['tap'] : ['click'];
+      var events = (0, _config.IS_MOBILE)() ? ['tap'] : ['click', 'mouseover', 'mouseout'];
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
@@ -274,6 +274,7 @@ var Block = function (_Container) {
     key: 'eventHandler',
     value: function eventHandler(event) {
       switch (event.type) {
+        case 'tap':
         case 'click':
           if (event.target instanceof _ColorDot2.default === false) {
             if (this.selected) {
@@ -284,24 +285,21 @@ var Block = function (_Container) {
             }
             this.selected = !this.selected;
           }
-          break;
 
-        case 'tap':
-          if (event.currentTarget instanceof _src.Text) {
-            event.stopPropagation();
-            if (event.target.alpha === 0) return;
-            this.emit('clickedLink', this.blockSlug);
-            return;
-          }
+          // if(event.currentTarget instanceof Text) {
+          //   event.stopPropagation();
+          //   if(event.target.alpha === 0) return;
+          //   this.emit('clickedLink', this.blockSlug);
+          //   return;
+          // }
           break;
 
         case 'mouseover':
-          this.emit('over', { blockSlug: this.blockSlug });
-          this.onFirstClick();
+          this.hoverImage();
           break;
 
         case 'mouseout':
-          this.onMouseOut();
+          if (!this.selected) this.hoverImage(false);
           break;
 
       }
@@ -339,11 +337,42 @@ var Block = function (_Container) {
       // let i = 0;
       this.imageContainer.children.forEach(function (image) {
         _gsap.TweenMax.killTweensOf(image);
-        _gsap.TweenMax.to(image.scale, .25, {
-          x: image.__scale * (!animIn ? 1 : HOVER_PERC),
-          y: image.__scale * (!animIn ? 1 : HOVER_PERC)
+
+        var animProps = {
+          scale: image.scale.x,
+          x: image.x,
+          y: image.y
+        };
+
+        var scale = animIn ? image.__scale : image.__originalScale;
+        var x = image.__originalPosition.x;
+        var y = image.__originalPosition.y;
+
+        _gsap.TweenMax.to(animProps, .25, {
+          scale: scale, x: x, y: y,
+          ease: _gsap.Power2.easeOut,
+          onUpdate: function onUpdate(image, props) {
+            image.scale.x = props.scale;
+            image.scale.y = props.scale;
+            image.x = props.x, image.y = props.y;
+          },
+          onUpdateParams: [image, animProps]
         });
-        // i++;
+      });
+    }
+  }, {
+    key: 'hoverImage',
+    value: function hoverImage() {
+      var animIn = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+      this.imageContainer.children.forEach(function (image) {
+        var x = animIn ? image.__mouseOnPosition.x : image.__originalPosition.x;
+        var y = animIn ? image.__mouseOnPosition.y : image.__originalPosition.y;
+
+        _gsap.TweenMax.to(image, .25, {
+          x: x, y: y,
+          ease: _gsap.Power2.easeOut
+        });
       });
     }
   }, {
@@ -364,7 +393,6 @@ var Block = function (_Container) {
       this.hitTest.beginFill(0xFf00ff, this.showDebug ? 0.1 : 0);
       this.hitTest.drawRect(0, 0, width, height);
       this.hitTest.endFill();
-
       this.resetScaleImages();
     }
   }, {
@@ -395,22 +423,24 @@ var Block = function (_Container) {
           var scale = isPortrait ? this.maxImageHeight / texture.height : this.maxImageWidth / texture.width;
 
           var sprite = new _src.Sprite(texture);
-          sprite.__scale = (0, _config.IS_MOBILE)() ? scale / 2 : scale;
-          sprite.__scale *= (0, _Maths.random)(0.7, 1);
-          sprite.__originalScale = sprite.__scale;
-          sprite.__scale = sprite.__scale * HOVER_PERC;
+
+          sprite.__originalScale = ((0, _config.IS_MOBILE)() ? scale / 2 : scale) * (0, _Maths.random)(0.7, 1);
+          sprite.__scale = sprite.__originalScale * HOVER_PERC;
+          sprite.__angle = angle * addedImages - startRotation;
+
           sprite.pivot = new _src.Point(sprite.width / 2, sprite.height / 2);
           sprite.scale.x = sprite.__scale;
           sprite.scale.y = sprite.__scale;
-          // sprite.scale.set( sprite.__scale );
-          //
-          var pos = new _src.Point();
-
-          var currentAngle = angle * addedImages - startRotation;
 
           var spacingPercentage = .78;
-          pos.x = sprite.width * spacingPercentage * Math.cos(currentAngle);
-          pos.y = sprite.height * spacingPercentage * Math.sin(currentAngle);
+          var spacingMousePerc = .65;
+
+          var width = texture.width * sprite.__scale;
+          var height = texture.height * sprite.__scale;
+
+          sprite.__originalPosition = new _src.Point(width * spacingPercentage * Math.cos(sprite.__angle), height * spacingPercentage * Math.sin(sprite.__angle));
+
+          sprite.__mouseOnPosition = new _src.Point(width * spacingMousePerc * Math.cos(sprite.__angle), height * spacingMousePerc * Math.sin(sprite.__angle));
 
           switch (addedImages) {
             case 0:
@@ -430,8 +460,8 @@ var Block = function (_Container) {
 
           addedImages++;
 
-          sprite.x = pos.x;
-          sprite.y = pos.y;
+          sprite.x = sprite.__originalPosition.x;
+          sprite.y = sprite.__originalPosition.y;
 
           this.imageContainer.addChild(sprite);
 
@@ -459,16 +489,19 @@ var Block = function (_Container) {
     key: 'resetScaleImages',
     value: function resetScaleImages() {
       this.imageContainer.children.forEach(function (block) {
-        block.__scale = block.__originalScale;
-        block.scale.x = block.__scale;
-        block.scale.y = block.__scale;
+        block.scale.x = block.__originalScale;
+        block.scale.y = block.__originalScale;
       });
+    }
+  }, {
+    key: 'reemitDotClick',
+    value: function reemitDotClick(event) {
+      this.emit('clickDot', event);
     }
   }, {
     key: 'addLinks',
     value: function addLinks(links) {
-      var _this2 = this;
-
+      this.reemitDotClickBind = this.reemitDotClick.bind(this);
       this.linksContainer = new _src.Container();
       this.linksContainer.position.y = (0, _config.IS_MOBILE)() ? 0 : 2;
       this.dots = [];
@@ -492,9 +525,7 @@ var Block = function (_Container) {
 
           var dot = new _ColorDot2.default(this.id, this.blockSlug, link, types[link]);
           dot.position.x = col % 2 * offset;
-          dot.on('clickDot', function (event) {
-            _this2.emit('clickDot', event);
-          });
+          dot.on('clickDot', this.reemitDotClickBind);
 
           if (col % 2 === 0) row++;
 
@@ -550,31 +581,6 @@ var Block = function (_Container) {
 
       this.link.buttonMode = true;
       this.link.interactive = true;
-      var events = ['click', 'tap'];
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
-
-      try {
-        for (var _iterator6 = events[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var event = _step6.value;
-
-          this.link.on(event, this.callbackRef);
-        }
-      } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion6 && _iterator6.return) {
-            _iterator6.return();
-          }
-        } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
-          }
-        }
-      }
 
       this.arrow = new _arrow2.default();
       this.arrow.alpha = 0;
@@ -814,17 +820,16 @@ var Renderer = function Renderer(forceCanvas, retina) {
       w = _getSize.w,
       h = _getSize.h;
 
+  var canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 1, 1);
+
   options.resolution = retina ? window.devicePixelRatio || 1 : options.resolution;
+  options.view = canvas;
 
-  var instance = void 0;
-
-  if (forceCanvas) {
-    instance = new _src.CanvasRenderer(w, h, options);
-  } else {
-    instance = (0, _src.autoDetectRenderer)(w, h, options);
-  }
-
-  return instance;
+  return forceCanvas ? new _src.CanvasRenderer(w, h, options) : (0, _src.autoDetectRenderer)(w, h, options);
 };
 
 exports.default = Renderer;
@@ -1269,6 +1274,7 @@ var WocViz = function () {
 
     /**
      * @method hideAllOpenedBlocks
+     * @param blockNotToBeHidSlug {string} slug of the block not to be hid
      * Force mouseOut state for all blocks when lines are destroyed
      */
 
@@ -1374,16 +1380,16 @@ var WocViz = function () {
     key: 'calculatePoint',
     value: function calculatePoint(width, rowY, offset, row, i) {
       offset = offset || { x: 0, y: 0 };
-      offset.y = (0, _config.IS_MOBILE)() ? 5 : 25;
-      offset.x = (0, _config.IS_MOBILE)() ? 5 : 25;
+      offset.y = (0, _config.IS_MOBILE)() ? 5 : 35;
+      offset.x = (0, _config.IS_MOBILE)() ? 5 : 35;
 
       var _getSize = (0, _config.getSize)(),
           wr = _getSize.wr;
 
       var area = wr / row;
       var returnPoint = {
-        x: area * i + (0, _Maths.random)(area - width),
-        y: rowY
+        x: area * i + (0, _Maths.random)(area - (width + offset.x)),
+        y: rowY + offset.y
       };
 
       var safeX = this.safeZone.x + this.safeZone.width;
@@ -1511,7 +1517,7 @@ var WocViz = function () {
         });
 
         _gsap.TweenMax.killTweensOf(this.containerLines);
-        _gsap.TweenMax.to(this.containerLines, .25, {
+        _gsap.TweenMax.to(this.containerLines, .15, {
           alpha: 0, onComplete: this.refOnCompletClean, onCompleteParams: [cb]
         });
 
