@@ -311,9 +311,9 @@ var Block = function (_Container) {
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
-      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: 1 });
-      _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .1 });
-      _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .1 });
+      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: 1, ease: _gsap.Power4.easeOut });
+      _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .1, ease: _gsap.Power4.easeOut });
+      _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .1, ease: _gsap.Power4.easeOut });
       this.animateImages();
     }
   }, {
@@ -323,9 +323,9 @@ var Block = function (_Container) {
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
-      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .5 });
-      _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos });
-      _gsap.TweenMax.to(this.link, .25, { alpha: 0, x: this.link.__startPos });
+      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .5, ease: _gsap.Power4.easeOut });
+      _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos, ease: _gsap.Power4.easeOut });
+      _gsap.TweenMax.to(this.link, .25, { alpha: 0, x: this.link.__startPos, ease: _gsap.Power4.easeOut });
       this.selected = false;
       this.animateImages(false);
     }
@@ -350,7 +350,7 @@ var Block = function (_Container) {
 
         _gsap.TweenMax.to(animProps, .25, {
           scale: scale, x: x, y: y,
-          ease: _gsap.Power2.easeOut,
+          ease: _gsap.Power4.easeOut,
           onUpdate: function onUpdate(image, props) {
             image.scale.x = props.scale;
             image.scale.y = props.scale;
@@ -371,7 +371,7 @@ var Block = function (_Container) {
 
         _gsap.TweenMax.to(image, .25, {
           x: x, y: y,
-          ease: _gsap.Power2.easeOut
+          ease: _gsap.Power4.easeOut
         });
       });
     }
@@ -433,7 +433,7 @@ var Block = function (_Container) {
           sprite.scale.y = sprite.__scale;
 
           var spacingPercentage = .78;
-          var spacingMousePerc = .65;
+          var spacingMousePerc = .71;
 
           var width = texture.width * sprite.__scale;
           var height = texture.height * sprite.__scale;
@@ -1280,9 +1280,9 @@ var WocViz = function () {
 
   }, {
     key: 'hideAllOpenedBlocks',
-    value: function hideAllOpenedBlocks() {
+    value: function hideAllOpenedBlocks(blockNotToBeHidSlug) {
       this.blocks.forEach(function (block) {
-        block.onMouseOut();
+        if (block.blockSlug !== blockNotToBeHidSlug) block.onMouseOut();
       });
     }
 
@@ -1351,7 +1351,7 @@ var WocViz = function () {
   }, {
     key: 'onBlockOver',
     value: function onBlockOver(event) {
-      this.hideAllOpenedBlocks();
+      this.hideAllOpenedBlocks(event.blockSlug);
       this.generateLines(event.blockSlug);
     }
 
