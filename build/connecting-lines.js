@@ -311,10 +311,10 @@ var Block = function (_Container) {
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
-      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: 1, ease: _gsap.Power4.easeOut });
-      _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .1, ease: _gsap.Power4.easeOut });
-      _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .1, ease: _gsap.Power4.easeOut });
-      this.animateImages();
+      _gsap.TweenMax.to(this.imageContainer, .25, { alpha: 1 });
+      _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .2 });
+      _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .2 });
+      // this.animateImages();
     }
   }, {
     key: 'onMouseOut',
@@ -323,41 +323,45 @@ var Block = function (_Container) {
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
-      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .5, ease: _gsap.Power4.easeOut });
-      _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos, ease: _gsap.Power4.easeOut });
-      _gsap.TweenMax.to(this.link, .25, { alpha: 0, x: this.link.__startPos, ease: _gsap.Power4.easeOut });
+      _gsap.TweenMax.to(this.imageContainer, .5, { alpha: .5 });
+      _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos });
+      _gsap.TweenMax.to(this.link, .25, { alpha: 0, x: this.link.__startPos });
       this.selected = false;
-      this.animateImages(false);
+      this.animateImages();
     }
   }, {
     key: 'animateImages',
     value: function animateImages() {
-      var animIn = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-
       // let i = 0;
       this.imageContainer.children.forEach(function (image) {
         _gsap.TweenMax.killTweensOf(image);
 
-        var animProps = {
-          scale: image.scale.x,
-          x: image.x,
-          y: image.y
-        };
+        // const animProps = {
+        //   // scale: image.scale.x,
+        //   x: image.x,
+        //   y: image.y,
+        // }
 
-        var scale = animIn ? image.__scale : image.__originalScale;
+        // const scale = animIn ? image.__scale : image.__originalScale;
         var x = image.__originalPosition.x;
         var y = image.__originalPosition.y;
 
-        _gsap.TweenMax.to(animProps, .25, {
-          scale: scale, x: x, y: y,
-          ease: _gsap.Power4.easeOut,
-          onUpdate: function onUpdate(image, props) {
-            image.scale.x = props.scale;
-            image.scale.y = props.scale;
-            image.x = props.x, image.y = props.y;
-          },
-          onUpdateParams: [image, animProps]
+        _gsap.TweenMax.to(image, .25, {
+          x: x, y: y,
+          ease: _gsap.Power4.easeOut
         });
+
+        // TweenMax.to(animProps, .25, {
+        //   x, y,
+        //   ease: Power4.easeOut,
+        //   onUpdate: function(image, props) {
+        //     // image.scale.x = props.scale;
+        //     // image.scale.y = props.scale;
+        //     image.x = props.x,
+        //     image.y = props.y
+        //   },
+        //   onUpdateParams: [image, animProps]
+        // })
       });
     }
   }, {
