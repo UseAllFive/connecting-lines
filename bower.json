@@ -13,7 +13,6 @@
     "useallfive"
   ],
   "homepage": "https://github.com/UseAllFive/useallfive-wocviz",
-  "private": true,
   "ignore": [
     "**/.*",
     "node_modules",
