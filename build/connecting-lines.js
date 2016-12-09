@@ -327,7 +327,8 @@ var Block = function (_Container) {
       _gsap.TweenMax.to(this.arrow, .25, { alpha: 0, x: this.arrow.__startPos });
       _gsap.TweenMax.to(this.link, .25, { alpha: 0, x: this.link.__startPos });
       this.selected = false;
-      this.animateImages();
+      // this.animateImages();
+      this.hoverImage(false);
     }
   }, {
     key: 'animateImages',
@@ -372,10 +373,15 @@ var Block = function (_Container) {
       this.imageContainer.children.forEach(function (image) {
         var x = animIn ? image.__mouseOnPosition.x : image.__originalPosition.x;
         var y = animIn ? image.__mouseOnPosition.y : image.__originalPosition.y;
+        var scale = animIn ? image.__scale : image.__originalScale;
 
-        _gsap.TweenMax.to(image, .25, {
+        _gsap.TweenMax.to(image, 0.5, {
           x: x, y: y,
-          ease: _gsap.Power4.easeOut
+          ease: Power3.easeInOut
+        });
+        _gsap.TweenMax.to(image.scale, 0.5, {
+          x: scale, y: scale, z: scale,
+          ease: Power3.easeInOut
         });
       });
     }
