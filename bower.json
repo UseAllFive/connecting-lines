@@ -12,7 +12,7 @@
     "visualisation",
     "useallfive"
   ],
-  "homepage": "https://github.com/silviopaganini/useallfive-wocviz",
+  "homepage": "https://github.com/UseAllFive/useallfive-wocviz",
   "private": true,
   "ignore": [
     "**/.*",
