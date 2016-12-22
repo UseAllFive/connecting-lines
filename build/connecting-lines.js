@@ -127,7 +127,7 @@ var Block = function (_Container) {
     _this.addChild(_this.hitTest);
 
     _this.imageContainer = new _src.Container();
-    _this.imageContainer.alpha = .5;
+    _this.imageContainer.alpha = 0.2;
     _this.imageContainer.x = 25;
     _this.imageContainer.y = 30;
     _this.addChild(_this.imageContainer);
@@ -369,20 +369,11 @@ var Block = function (_Container) {
     value: function hoverImage() {
       var animIn = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
-      this.imageContainer.children.forEach(function (image) {
-        var x = animIn ? image.__mouseOnPosition.x : image.__originalPosition.x;
-        var y = animIn ? image.__mouseOnPosition.y : image.__originalPosition.y;
-        var scale = animIn ? image.__scale : image.__originalScale;
-
-        _gsap.TweenMax.to(image, 0.5, {
-          x: x, y: y,
-          ease: Power3.easeInOut
-        });
-        _gsap.TweenMax.to(image.scale, 0.5, {
-          x: scale, y: scale, z: scale,
-          ease: Power3.easeInOut
-        });
-      });
+      if (animIn) {
+        _gsap.TweenMax.to(this.imageContainer, 0.5, { alpha: 0.6, ease: _gsap.Power4.easeOut });
+      } else {
+        _gsap.TweenMax.to(this.imageContainer, 0.5, { alpha: 0.2, ease: _gsap.Power4.easeOut });
+      }
     }
   }, {
     key: 'createHitTest',
@@ -1526,7 +1517,7 @@ var WocViz = function () {
         });
 
         _gsap.TweenMax.killTweensOf(this.containerLines);
-        _gsap.TweenMax.to(this.containerLines, .15, {
+        _gsap.TweenMax.to(this.containerLines, 0.01, {
           alpha: 0, onComplete: this.refOnCompletClean, onCompleteParams: [cb]
         });
 
@@ -1749,7 +1740,8 @@ var WocViz = function () {
               l.lineStyle(1, color);
             },
             onStartParams: [line, color, points[0][0], points[0][1]],
-
+            ease: Circ.easeIn,
+            delay: 0.3,
             onComplete: function onComplete(l) {
               // console.log('finish curve');
               // l.stroke();
@@ -1772,7 +1764,7 @@ var WocViz = function () {
                 y: j === 0 ? points[i][1] : curvePoints[j - 1].y
               };
 
-              var time = 1 / curvePoints.length * _this3.animationTimingMultiplier;
+              var time = 0.37 / curvePoints.length * _this3.animationTimingMultiplier;
               timeline.add(_gsap.TweenMax.to(objRef, time, {
                 x: curvePoints[j].x,
                 y: curvePoints[j].y,
