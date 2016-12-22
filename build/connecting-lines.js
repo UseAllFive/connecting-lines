@@ -310,7 +310,7 @@ var Block = function (_Container) {
       _gsap.TweenMax.killTweensOf(this.imageContainer);
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
-
+      _gsap.TweenMax.to(this.imageContainer, 0.5, { alpha: 0.6, ease: _gsap.Power4.easeOut });
       _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .2 });
       _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .2 });
       // this.animateImages();
@@ -370,9 +370,18 @@ var Block = function (_Container) {
       var animIn = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
       if (animIn) {
-        _gsap.TweenMax.to(this.imageContainer, 0.5, { alpha: 0.6, ease: _gsap.Power4.easeOut });
+        _gsap.TweenMax.to(this.imageContainer, 0.5, { alpha: 0.4, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.title, 0.5, { alpha: 1, delay: 0.2, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.title.position, 0.5, { y: this.title.position.__startY - 10, delay: 0.2, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.info, 0.5, { alpha: 1, delay: 0.4, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.info.position, 0.5, { y: this.info.position.__startY - 10, delay: 0.4, ease: Power2.easeOut });
       } else {
-        _gsap.TweenMax.to(this.imageContainer, 0.5, { alpha: 0.2, ease: _gsap.Power4.easeOut });
+        _gsap.TweenMax.killTweensOf([this.imageContainer, this.title, this.title.position, this.info, this.info.position]);
+        _gsap.TweenMax.to(this.imageContainer, 0.5, { alpha: 0.2, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.title, 0.5, { alpha: 0, delay: 0.4, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.title.position, 0.5, { y: this.title.position.__startY, delay: 0.4, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.info, 0.5, { alpha: 0, delay: 0.2, ease: Power2.easeOut });
+        _gsap.TweenMax.to(this.info.position, 0.5, { y: this.info.position.__startY, delay: 0.2, ease: Power2.easeOut });
       }
     }
   }, {
@@ -562,6 +571,7 @@ var Block = function (_Container) {
       this.title = new _src.Text(title, (0, _config.IS_MOBILE)() ? (0, _styles.styleTitleMobile)() : (0, _styles.styleTitle)());
       // this.title.resolution = window.devicePixelRatio;
       this.title.position.x = (0, _config.IS_MOBILE)() ? 15 : 30;
+      this.title.position.__startY = this.title.position.y;
       this.addChild(this.title);
 
       this.info = new _src.Text(info, (0, _config.IS_MOBILE)() ? (0, _styles.styleInfoMobile)() : (0, _styles.styleInfo)());
@@ -569,6 +579,7 @@ var Block = function (_Container) {
       this.info.position.x = (0, _config.IS_MOBILE)() ? 6 : 32;
       this.info.position.y = this.title.height + offset;
       this.info.__startPos = this.info.position.x;
+      this.info.position.__startY = this.info.position.y;
       this.addChild(this.info);
 
       this.link = new _src.Text(linkCopy.toUpperCase(), (0, _config.IS_MOBILE)() ? (0, _styles.styleLinkMobile)() : (0, _styles.styleLink)());
@@ -589,6 +600,8 @@ var Block = function (_Container) {
       this.arrow.position.y = this.link.position.y + this.arrow.height / 2;
       this.arrow.__startPos = this.arrow.position.x;
       this.addChild(this.arrow);
+      this.title.alpha = 0;
+      this.info.alpha = 0;
     }
   }, {
     key: 'updateTitle',
@@ -840,7 +853,7 @@ exports.default = Renderer;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var assetsFolder = 'static/images/';
+var assetsFolder = 'images/';
 
 var data = exports.data = {
   assetsFolder: assetsFolder,
