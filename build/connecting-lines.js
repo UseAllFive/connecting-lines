@@ -78,7 +78,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var data = (0, _config.getData)();
-var HOVER_PERC = 1.38;
+var HOVER_PERC = 1.1;
 
 var Block = function (_Container) {
   _inherits(Block, _Container);
@@ -311,7 +311,6 @@ var Block = function (_Container) {
       _gsap.TweenMax.killTweensOf(this.arrow);
       _gsap.TweenMax.killTweensOf(this.link);
 
-      _gsap.TweenMax.to(this.imageContainer, .25, { alpha: 1 });
       _gsap.TweenMax.to(this.arrow, .25, { alpha: 1, x: this.arrow.__startPos + 10, delay: .2 });
       _gsap.TweenMax.to(this.link, .25, { alpha: 1, x: this.link.__startPos + 10, delay: .2 });
       // this.animateImages();
@@ -1881,17 +1880,48 @@ var WocViz = function () {
   }, {
     key: 'showOnlyLines',
     value: function showOnlyLines(lineSlugs) {
-      var _this5 = this;
+      var self = this;
+      var locationToScroll = false;
+      var windowScroll = $('body').scrollTop();
+      var animateObj = {};
 
-      this.hideAllOpenedBlocks();
+      self.hideAllOpenedBlocks();
       if (lineSlugs.constructor === Array) {
-        this.clean(function () {
-          lineSlugs.forEach(function (line) {
-            _this5.calculateLines(null, line);
+        lineSlugs.forEach(function (line) {
+          for (var i = 0; i < self.blocks.length; i++) {
+            var block = self.blocks[i];
+            if (block.linksSlugs.indexOf(line) > -1) {
+              if (!locationToScroll || block._bounds.minY < locationToScroll) {
+                locationToScroll = block._bounds.minY;
+              }
+            }
+          };
+        });
+        if (lineSlugs.length > 0) {
+          animateObj = { scrollTop: locationToScroll };
+        }
+        $('body').animate(animateObj, Math.abs(windowScroll - locationToScroll) + 250, function () {
+          self.clean(function () {
+            lineSlugs.forEach(function (line) {
+              self.calculateLines(null, line);
+            });
           });
         });
-      } else {
-        this.generateLines(null, lineSlugs);
+      } else if (lineSlugs) {
+        for (var i = 0; i < self.blocks.length; i++) {
+          var block = self.blocks[i];
+          if (block.linksSlugs.indexOf(lineSlugs) > -1) {
+            if (!locationToScroll || block._bounds.minY < locationToScroll) {
+              locationToScroll = block._bounds.minY;
+            }
+          }
+        };
+        if (lineSlugs) {
+          animateObj = { scrollTop: locationToScroll };
+        }
+        $('body').animate(animateObj, Math.abs(windowScroll - locationToScroll) + 250, function () {
+          self.generateLines(null, lineSlugs);
+        });
       }
     }
 
