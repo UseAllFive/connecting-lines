@@ -12,7 +12,7 @@ let app = new WocViz();
  * component is ready to render
  */
 const onAppReady = () => {
-  // app.showBlockLines('fun-palace');
+  app.showBlockLines('hotel-carlton');
   // app.showOnlyLines('architecture');
   // app.showOnlyLines(['architecture', 'fun-palace']);
 }
