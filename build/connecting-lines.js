@@ -1867,8 +1867,14 @@ var WocViz = function () {
   }, {
     key: 'showBlockLines',
     value: function showBlockLines(blockSlug) {
+      var block;
       this.hideAllOpenedBlocks();
       this.generateLines(blockSlug);
+      // Select block
+      block = (0, _lodash.find)(this.blocks, { blockSlug: blockSlug });
+      block.emit('over', { blockSlug: blockSlug });
+      block.onFirstClick();
+      block.selected = true;
     }
 
     /**
