@@ -1762,7 +1762,7 @@ var WocViz = function () {
                 y: j === 0 ? points[i][1] : curvePoints[j - 1].y
               };
 
-              var time = 0.37 / curvePoints.length * _this3.animationTimingMultiplier;
+              var time = 0.45 / curvePoints.length * _this3.animationTimingMultiplier;
               timeline.add(_gsap.TweenMax.to(objRef, time, {
                 x: curvePoints[j].x,
                 y: curvePoints[j].y,
