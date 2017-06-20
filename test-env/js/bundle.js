@@ -1309,6 +1309,7 @@ var WocViz = function () {
           animationTimingMultiplier = props.animationTimingMultiplier,
           onReady = props.onReady,
           onLinkClick = props.onLinkClick,
+          onDotClickEvent = props.onDotClickEvent,
           isMobile = props.isMobile;
 
       this.retina = retina;
@@ -1324,6 +1325,7 @@ var WocViz = function () {
       this.forceCanvas = forceCanvas;
       this.onReady = onReady;
       this.onLinkClick = onLinkClick || function () {};
+      this.onDotClickEvent = onDotClickEvent || function () {};
       this.animationTimingMultiplier = animationTimingMultiplier || .6;
 
       this.maxImageWidth = maxImageWidth || 200;
@@ -1605,6 +1607,8 @@ var WocViz = function () {
   }, {
     key: 'addObjects',
     value: function addObjects() {
+      var _this2 = this;
+
       var blocks = this.data.blocks;
 
       this.blocks = [];
@@ -1624,7 +1628,10 @@ var WocViz = function () {
 
           var block = new _Block2.default(blockData, this.maxImageWidth, this.maxImageHeight, this.showDebug);
           block.on('over', this.callbackRefs['over']);
-          block.on('clickDot', this.callbackRefs['clickDot']);
+          block.on('clickDot', function (e) {
+            _this2.callbackRefs['clickDot'](e);
+            _this2.onDotClickEvent(e);
+          });
           block.on('clickedLink', this.onLinkClick);
 
           this.blocks.push(block);
@@ -1849,12 +1856,12 @@ var WocViz = function () {
   }, {
     key: 'generateLines',
     value: function generateLines(blockSlug) {
-      var _this2 = this;
+      var _this3 = this;
 
       var dotSlug = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
       this.clean(function () {
-        _this2.calculateLines(blockSlug, dotSlug);
+        _this3.calculateLines(blockSlug, dotSlug);
       });
     }
 
@@ -1868,7 +1875,7 @@ var WocViz = function () {
   }, {
     key: 'calculateLines',
     value: function calculateLines(blockSlug) {
-      var _this3 = this;
+      var _this4 = this;
 
       var dotSlug = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
@@ -2061,7 +2068,7 @@ var WocViz = function () {
           var group = _step11.value;
 
           var line = new _src.Graphics();
-          _this3.containerLines.addChild(line);
+          _this4.containerLines.addChild(line);
 
           var points = [];
           var color = void 0;
@@ -2096,7 +2103,7 @@ var WocViz = function () {
             }
           }
 
-          _this3.lines.push({ line: line, color: color });
+          _this4.lines.push({ line: line, color: color });
 
           var timeline = new _gsap.TimelineMax({
             paused: true,
@@ -2117,7 +2124,7 @@ var WocViz = function () {
 
           });
 
-          _this3.timelines.push(timeline);
+          _this4.timelines.push(timeline);
 
           for (var i = 0; i < points.length - 1; i++) {
 
@@ -2130,7 +2137,7 @@ var WocViz = function () {
                 y: j === 0 ? points[i][1] : curvePoints[j - 1].y
               };
 
-              var time = 0.45 / curvePoints.length * _this3.animationTimingMultiplier;
+              var time = 0.45 / curvePoints.length * _this4.animationTimingMultiplier;
               timeline.add(_gsap.TweenMax.to(objRef, time, {
                 x: curvePoints[j].x,
                 y: curvePoints[j].y,
@@ -2198,7 +2205,7 @@ var WocViz = function () {
   }, {
     key: 'resizeRenderer',
     value: function resizeRenderer() {
-      var _this4 = this;
+      var _this5 = this;
 
       this.renderer.resize((0, _config.getSize)().wr, (0, _Maths.round)(this.scene.height));
       var scale = 1 / this.renderer.resolution;
@@ -2206,10 +2213,10 @@ var WocViz = function () {
       this.renderer.view.style.height = this.renderer.height * scale + 'px';
 
       this.clean(function () {
-        _this4.sceneHitTest.clear();
-        _this4.sceneHitTest.beginFill(0xFf00ff, _this4.showDebug ? 0.1 : 0);
-        _this4.sceneHitTest.drawRect(0, 0, _this4.renderer.width, _this4.scene.height);
-        _this4.sceneHitTest.endFill();
+        _this5.sceneHitTest.clear();
+        _this5.sceneHitTest.beginFill(0xFf00ff, _this5.showDebug ? 0.1 : 0);
+        _this5.sceneHitTest.drawRect(0, 0, _this5.renderer.width, _this5.scene.height);
+        _this5.sceneHitTest.endFill();
       });
     }
 
