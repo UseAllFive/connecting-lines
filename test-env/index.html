@@ -424,7 +424,10 @@
       forceCanvas: true,
       isMobile: false,
       onReady: window.onAppReady,
-      onLinkClick: window.onLinkClick
+      onLinkClick: window.onLinkClick,
+      onDotClickEvent: function(e) {
+          console.log(e);
+      }
     });
 
     /**
