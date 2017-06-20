@@ -1529,6 +1529,58 @@ var WocViz = function () {
         return;
       }
 
+      var dots = [];
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.blocks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var block = _step.value;
+
+          dots = dots.concat(block.dots);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = dots[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var dot = _step2.value;
+
+          dot.alpha = 0.3;
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
       this.hideAllOpenedBlocks();
       this.clean();
     }
@@ -1566,13 +1618,13 @@ var WocViz = function () {
         'clickDot': this.onDotClick.bind(this)
       };
 
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator = blocks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var blockData = _step.value;
+        for (var _iterator3 = blocks[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var blockData = _step3.value;
 
           var block = new _Block2.default(blockData, this.maxImageWidth, this.maxImageHeight, this.showDebug);
           block.on('over', this.callbackRefs['over']);
@@ -1587,16 +1639,16 @@ var WocViz = function () {
           this.maxWidthBlock = (0, _Maths.round)(Math.max(this.maxWidthBlock, block.width));
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
           }
         } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
@@ -1704,13 +1756,13 @@ var WocViz = function () {
       var index = 0;
       var rowY = 0;
 
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator2 = this.rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var row = _step2.value;
+        for (var _iterator4 = this.rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var row = _step4.value;
 
           var rowHeight = 0;
           for (var i = 0; i < row; i++) {
@@ -1728,16 +1780,16 @@ var WocViz = function () {
           rowY += rowHeight + 25;
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
           }
         } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
+          if (_didIteratorError4) {
+            throw _iteratorError4;
           }
         }
       }
@@ -1828,96 +1880,75 @@ var WocViz = function () {
       var dotSlug = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
       var dots = [];
+      var inactiveDots = [];
       var referenceBlock = (0, _lodash.find)(this.blocks, function (block) {
         return block.blockSlug === blockSlug;
       });
 
       if (blockSlug && !dotSlug) {
-        var _iteratorNormalCompletion3 = true;
-        var _didIteratorError3 = false;
-        var _iteratorError3 = undefined;
-
-        try {
-          for (var _iterator3 = this.blocks[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var block = _step3.value;
-
-            // console.log(block.links, referenceBlock.links);
-            if (block === referenceBlock) {
-              dots = dots.concat(block.dots);
-            } else {
-              var _iteratorNormalCompletion4 = true;
-              var _didIteratorError4 = false;
-              var _iteratorError4 = undefined;
-
-              try {
-                for (var _iterator4 = block.dots[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                  var dot = _step4.value;
-
-                  if (referenceBlock.linksSlugs.indexOf(dot.dotSlug) > -1) {
-                    dots.push(dot);
-                  }
-                }
-              } catch (err) {
-                _didIteratorError4 = true;
-                _iteratorError4 = err;
-              } finally {
-                try {
-                  if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                    _iterator4.return();
-                  }
-                } finally {
-                  if (_didIteratorError4) {
-                    throw _iteratorError4;
-                  }
-                }
-              }
-            }
-          }
-        } catch (err) {
-          _didIteratorError3 = true;
-          _iteratorError3 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-              _iterator3.return();
-            }
-          } finally {
-            if (_didIteratorError3) {
-              throw _iteratorError3;
-            }
-          }
-        }
-      } else {
         var _iteratorNormalCompletion5 = true;
         var _didIteratorError5 = false;
         var _iteratorError5 = undefined;
 
         try {
           for (var _iterator5 = this.blocks[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-            var _block = _step5.value;
-            var _iteratorNormalCompletion6 = true;
-            var _didIteratorError6 = false;
-            var _iteratorError6 = undefined;
+            var block = _step5.value;
 
-            try {
-              for (var _iterator6 = _block.dots[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                var _dot = _step6.value;
+            // console.log(block.links, referenceBlock.links);
+            if (block === referenceBlock) {
+              dots = dots.concat(block.dots);
+              var _iteratorNormalCompletion6 = true;
+              var _didIteratorError6 = false;
+              var _iteratorError6 = undefined;
 
-                if (_dot.dotSlug === dotSlug) {
-                  dots.push(_dot);
+              try {
+                for (var _iterator6 = dots[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                  var dot = _step6.value;
+
+                  dot.alpha = 1;
+                }
+              } catch (err) {
+                _didIteratorError6 = true;
+                _iteratorError6 = err;
+              } finally {
+                try {
+                  if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                    _iterator6.return();
+                  }
+                } finally {
+                  if (_didIteratorError6) {
+                    throw _iteratorError6;
+                  }
                 }
               }
-            } catch (err) {
-              _didIteratorError6 = true;
-              _iteratorError6 = err;
-            } finally {
+            } else {
+              var _iteratorNormalCompletion7 = true;
+              var _didIteratorError7 = false;
+              var _iteratorError7 = undefined;
+
               try {
-                if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                  _iterator6.return();
+                for (var _iterator7 = block.dots[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                  var _dot = _step7.value;
+
+                  if (referenceBlock.linksSlugs.indexOf(_dot.dotSlug) > -1) {
+                    dots.push(_dot);
+                    _dot.alpha = 1;
+                  } else {
+                    _dot.alpha = 0.3;
+                  }
                 }
+              } catch (err) {
+                _didIteratorError7 = true;
+                _iteratorError7 = err;
               } finally {
-                if (_didIteratorError6) {
-                  throw _iteratorError6;
+                try {
+                  if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                    _iterator7.return();
+                  }
+                } finally {
+                  if (_didIteratorError7) {
+                    throw _iteratorError7;
+                  }
                 }
               }
             }
@@ -1936,6 +1967,83 @@ var WocViz = function () {
             }
           }
         }
+      } else {
+        var _iteratorNormalCompletion8 = true;
+        var _didIteratorError8 = false;
+        var _iteratorError8 = undefined;
+
+        try {
+          for (var _iterator8 = this.blocks[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+            var _block = _step8.value;
+            var _iteratorNormalCompletion10 = true;
+            var _didIteratorError10 = false;
+            var _iteratorError10 = undefined;
+
+            try {
+              for (var _iterator10 = _block.dots[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+                var _dot2 = _step10.value;
+
+                if (_dot2.dotSlug === dotSlug) {
+                  dots.push(_dot2);
+                  _dot2.alpha = 1;
+                } else {
+                  inactiveDots.push(_dot2);
+                }
+              }
+            } catch (err) {
+              _didIteratorError10 = true;
+              _iteratorError10 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion10 && _iterator10.return) {
+                  _iterator10.return();
+                }
+              } finally {
+                if (_didIteratorError10) {
+                  throw _iteratorError10;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError8 = true;
+          _iteratorError8 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion8 && _iterator8.return) {
+              _iterator8.return();
+            }
+          } finally {
+            if (_didIteratorError8) {
+              throw _iteratorError8;
+            }
+          }
+        }
+
+        var _iteratorNormalCompletion9 = true;
+        var _didIteratorError9 = false;
+        var _iteratorError9 = undefined;
+
+        try {
+          for (var _iterator9 = inactiveDots[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+            var _dot3 = _step9.value;
+
+            _dot3.alpha = 0.3;
+          }
+        } catch (err) {
+          _didIteratorError9 = true;
+          _iteratorError9 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion9 && _iterator9.return) {
+              _iterator9.return();
+            }
+          } finally {
+            if (_didIteratorError9) {
+              throw _iteratorError9;
+            }
+          }
+        }
       }
 
       // sort dots to be the rollovered first
@@ -1951,13 +2059,13 @@ var WocViz = function () {
         return dot.dotSlug;
       });
 
-      var _iteratorNormalCompletion7 = true;
-      var _didIteratorError7 = false;
-      var _iteratorError7 = undefined;
+      var _iteratorNormalCompletion11 = true;
+      var _didIteratorError11 = false;
+      var _iteratorError11 = undefined;
 
       try {
         var _loop = function _loop() {
-          var group = _step7.value;
+          var group = _step11.value;
 
           var line = new _src.Graphics();
           _this4.containerLines.addChild(line);
@@ -1965,32 +2073,32 @@ var WocViz = function () {
           var points = [];
           var color = void 0;
 
-          var _iteratorNormalCompletion8 = true;
-          var _didIteratorError8 = false;
-          var _iteratorError8 = undefined;
+          var _iteratorNormalCompletion12 = true;
+          var _didIteratorError12 = false;
+          var _iteratorError12 = undefined;
 
           try {
-            for (var _iterator8 = groupDots[group][Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-              var _dot2 = _step8.value;
+            for (var _iterator12 = groupDots[group][Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+              var _dot4 = _step12.value;
 
-              var _dot2$getGlobalPoint = _dot2.getGlobalPoint(),
-                  x = _dot2$getGlobalPoint.x,
-                  y = _dot2$getGlobalPoint.y;
+              var _dot4$getGlobalPoint = _dot4.getGlobalPoint(),
+                  x = _dot4$getGlobalPoint.x,
+                  y = _dot4$getGlobalPoint.y;
 
-              color = _dot2.color;
+              color = _dot4.color;
               points.push([x, y]);
             }
           } catch (err) {
-            _didIteratorError8 = true;
-            _iteratorError8 = err;
+            _didIteratorError12 = true;
+            _iteratorError12 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion8 && _iterator8.return) {
-                _iterator8.return();
+              if (!_iteratorNormalCompletion12 && _iterator12.return) {
+                _iterator12.return();
               }
             } finally {
-              if (_didIteratorError8) {
-                throw _iteratorError8;
+              if (_didIteratorError12) {
+                throw _iteratorError12;
               }
             }
           }
@@ -2049,20 +2157,20 @@ var WocViz = function () {
           timeline.play();
         };
 
-        for (var _iterator7 = Object.keys(groupDots)[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+        for (var _iterator11 = Object.keys(groupDots)[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
           _loop();
         }
       } catch (err) {
-        _didIteratorError7 = true;
-        _iteratorError7 = err;
+        _didIteratorError11 = true;
+        _iteratorError11 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion7 && _iterator7.return) {
-            _iterator7.return();
+          if (!_iteratorNormalCompletion11 && _iterator11.return) {
+            _iterator11.return();
           }
         } finally {
-          if (_didIteratorError7) {
-            throw _iteratorError7;
+          if (_didIteratorError11) {
+            throw _iteratorError11;
           }
         }
       }
