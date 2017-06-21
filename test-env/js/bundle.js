@@ -1585,7 +1585,7 @@ var WocViz = function () {
             _this2.callbackRefs['clickDot'](obj);
             _this2.onDotClickEvent(obj);
           });
-
+          block.on('clickedLink', this.onLinkClick);
           this.blocks.push(block);
           this.scene.addChild(block);
           this.maxWidthBlock = (0, _Maths.round)(Math.max(this.maxWidthBlock, block.width));
