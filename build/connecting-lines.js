@@ -280,7 +280,7 @@ var Block = function (_Container) {
             if (this.selected) {
               this.emit('clickedLink', this.blockSlug);
             } else {
-              this.emit('over', { blockSlug: this.blockSlug });
+              this.emit('over', { blockSlug: this.blockSlug, themes: this.linksSlugs });
               this.onFirstClick();
             }
             this.selected = !this.selected;
@@ -1053,6 +1053,7 @@ var WocViz = function () {
           safeZone = props.safeZone,
           animationTimingMultiplier = props.animationTimingMultiplier,
           onReady = props.onReady,
+          onExhibitionClick = props.onExhibitionClick,
           onLinkClick = props.onLinkClick,
           onDotClickEvent = props.onDotClickEvent,
           isMobile = props.isMobile;
@@ -1071,6 +1072,7 @@ var WocViz = function () {
       this.forceCanvas = forceCanvas;
       this.onReady = onReady;
       this.onLinkClick = onLinkClick || function () {};
+      this.onExhibitionClick = onExhibitionClick || function () {};
       this.onDotClickEvent = onDotClickEvent || function () {};
       this.animationTimingMultiplier = animationTimingMultiplier || .6;
 
@@ -1322,12 +1324,14 @@ var WocViz = function () {
           var blockData = _step.value;
 
           var block = new _Block2.default(blockData, this.maxImageWidth, this.maxImageHeight, this.showDebug);
-          block.on('over', this.callbackRefs['over']);
-          block.on('clickDot', function (e) {
-            _this2.callbackRefs['clickDot'](e);
-            _this2.onDotClickEvent(e);
+          block.on('over', function (e) {
+            _this2.callbackRefs['over'](e);
+            _this2.onExhibitionClick(e);
           });
-          block.on('clickedLink', this.onLinkClick);
+          block.on('clickDot', function (obj) {
+            _this2.callbackRefs['clickDot'](obj);
+            _this2.onDotClickEvent(obj);
+          });
 
           this.blocks.push(block);
           this.scene.addChild(block);
