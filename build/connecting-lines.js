@@ -1282,7 +1282,7 @@ var WocViz = function () {
 
       this.hideAllOpenedBlocks();
       this.clean();
-      this.onWhiteSpaceClickEvent(obj);
+      this.onWhiteSpaceClickEvent();
     }
 
     /**
