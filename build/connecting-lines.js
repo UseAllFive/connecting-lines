@@ -1962,7 +1962,7 @@ var WocViz = function () {
   }, {
     key: 'onResize',
     value: function onResize(w, h) {
-      if (!S_MOBILE()) {
+      if (!(0, _config.IS_MOBILE)()) {
         w = w || window.innerWidth;
         h = h || window.innerHeight;
 
